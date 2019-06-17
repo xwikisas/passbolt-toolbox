@@ -3,6 +3,10 @@ import argparse
 import logging
 import sys
 
+from distutils.util import strtobool
+
+from configuration import Environment
+
 def init_logger(logLevel):
     rootLogger = logging.getLogger()
 
@@ -46,3 +50,19 @@ def parse_args():
     renewParser.add_argument('-l', '--limit', help='only update the n first passwords')
 
     return rootParser.parse_args()
+
+def display_trust_instructions(logger, fingerprint):
+    logger.info('Please run the following to trust the key : ')
+    commandLine = '> gpg --homedir {} --edit-key {}'.format(Environment.keyringDir, fingerprint)
+    logger.info(commandLine)
+    logger.info('> trust')
+    logger.info('> 5')
+    logger.info('> y')
+    logger.info('> save')
+
+def ask_question(question, defaultReturn):
+    sys.stdout.write(question)
+    try:
+        return strtobool(input())
+    except ValueError as e:
+        return defaultReturn

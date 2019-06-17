@@ -3,6 +3,8 @@ import requests
 
 from configuration import Environment
 
+from utils import display_trust_instructions
+
 # Defines a Passbolt instance with its fingerprint, its url, ...
 class PassboltServer:
     logger = logging.getLogger('PassboltServer')
@@ -66,13 +68,8 @@ class PassboltServer:
                 'The key [{}] has been imported in the keyring but needs to be trusted before use'
                 .format(self.fingerprint)
             )
-            self.logger.info('Please run the following to trust the server key : ')
-            commandLine = '> gpg --homedir {} --edit-key {}'.format(Environment.keyringDir, self.fingerprint)
-            self.logger.info(commandLine)
-            self.logger.info('> trust')
-            self.logger.info('> 5')
-            self.logger.info('> y')
-            self.logger.info('> save')
+
+            display_trust_instructions(self.logger, self.fingerprint)
         else:
             self.logger.error('Something went wrong : [{}] keys were imported in the keyring'
                          .format(importResult.counts['imported']))

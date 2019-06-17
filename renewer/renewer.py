@@ -22,5 +22,7 @@ cm = ConfigManager()
 keyring = GPG(homedir=Environment.keyringDir)
 
 if args.action == 'setup':
-    SetupHelper(cm, keyring).setupInstance()
+    setupHelper = SetupHelper(cm, keyring)
+    setupHelper.setupServer()
+    #setupHelper.setupUser()
 
