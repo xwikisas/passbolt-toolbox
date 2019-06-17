@@ -83,4 +83,5 @@ class PassboltServer:
         serverConfiguration = self.configManager.server()
         serverConfiguration['fingerprint'] = self.fingerprint
         serverConfiguration['uri'] = self.uri
+        serverConfiguration['verifyCert'] = self.verifyCert
         self.configManager.persist()
