@@ -45,6 +45,13 @@ class SetupHelper:
             # Get the server uri
             sys.stdout.write('Server URI : ')
             self.passboltServer.setURI(input())
+
+            self.passboltServer.setVerifyCert(
+                not self.__askQuestion(
+                    'Trust the server certficate without verification ? [yes / NO] ', False
+                )
+            )
+
             self.passboltServer.fetchServerIdentity()
             if self.__askQuestion(
                     'Server identity\n{}\nContinue ? [yes / NO] '.format(self.passboltServer), False):

@@ -12,6 +12,7 @@ class PassboltServer:
         self.keyring = keyring
         self.fingerprint = self.configManager.server()['fingerprint']
         self.uri = self.configManager.server()['uri']
+        self.verifyCert = self.configManager.server()['verifyCert']
 
     def __str__(self):
         return '> Server URI : {}\n> Server fingerprint : {}\n'.format(self.uri, self.fingerprint)
@@ -32,13 +33,17 @@ class PassboltServer:
     def setURI(self, uri):
         self.uri = uri
 
+    def setVerifyCert(self, verifyCert):
+        self.verifyCert = verifyCert
+
     def fetchServerIdentity(self):
         if not self.uri:
             raise ValueError('The server URI is undefined.')
 
         serverResponse = requests.get(
             self.__buildURI('/auth/verify.json'),
-            headers=self.__buildHeaders(None)
+            headers=self.__buildHeaders(None),
+            verify=self.verifyCert
         )
 
         if serverResponse.status_code == 200:
