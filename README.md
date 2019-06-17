@@ -7,6 +7,32 @@ This tool allows to quickly update a given set of passwords from passbolt. It wi
 * Update the password where it is defined (API, Apache2 HTTP Basic, XWiki, ...)
 * Update the password in Passbolt
 
+## Overview
+
+On its first start, the tool will create a directory `~/.password-renewer` storing all of its configuration, this includes :
+* The tool configuration
+* The GnuPG keyring used by the tool
+
+In order to properly communicate with Passbolt, the tool needs to know the following information :
+* The public key of the Passbolt server (this key should be trusted *ultimately* by GnuPG)
+* The private key of the user that you will use for authentication on the server (this key should also be *ultimately* trusted)
+* The address of the server
+
+Those information are stored in `~/.passbolt-renewer/config.json`. You can refer to this file in case something goes wrong. Here is an example a file :
+
+```
+{
+    "server": {
+        "fingerprint": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "uri": "https://passbolt.mycompany.com",
+        "verifyCert": false
+    },
+    "user": {
+        "fingerprint": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    }
+}
+```
+
 ## Installation and configuration
 
 ### Prerequisites
@@ -45,3 +71,12 @@ source venv/bin/activate
 
 ### First configuration
 
+In order to understand the following steps, please refer to the *Overview* section.
+
+#### Server configuration
+
+We'll first start by configuring the Passbolt server. As getting the public key of the server is usually teadious without relying on the REST API of the server, this step is partially automated.
+
+You can run `passbolt-renewer setup` to start the setup of the server. If a server was previously set up, the tool will ask before overwriting the server configuration.
+
+> In case your server is configured with HTTPS but does not provide its [certificate chain](https://support.dnsimple.com/articles/what-is-ssl-certificate-chain/), you will need to answer YES to the question `Trust the server certficate without verification ?`.
