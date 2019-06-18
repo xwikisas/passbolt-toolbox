@@ -5,6 +5,8 @@ import sys
 
 from distutils.util import strtobool
 
+from gpgauth import GPGAuthSessionWrapper
+
 from configuration import Environment
 
 def init_logger(logLevel):
@@ -38,7 +40,13 @@ def parse_args():
     # Setup utils
     setupParser = subParsers.add_parser(
         'setup',
-        help='setup the tool to work on a specific Passbolt instance'
+        help='setup the tool to work on a specific Passbolt server'
+    )
+
+    # Test utils
+    testParser = subParsers.add_parser(
+        'test',
+        help='verify the tool configuration by authenticating to the configured Passbolt server'
     )
 
     # Renew utils
@@ -66,3 +74,25 @@ def ask_question(question, defaultReturn):
         return strtobool(input())
     except ValueError as e:
         return defaultReturn
+
+def test_configuration(logger, configuration, keyring):
+    serverURI = configuration.server()['uri']
+    serverFingerprint = configuration.server()['fingerprint']
+    serverVerifyCert = configuration.server()['verifyCert']
+    userFingerprint = configuration.user()['fingerprint']
+    logger.info('Testing the authentication to the server [{}]'.format(serverURI))
+
+    session = GPGAuthSessionWrapper(
+        gpg=keyring,
+        server_url=serverURI,
+        user_fingerprint=userFingerprint,
+        verify=serverVerifyCert
+    )
+
+    assert session.server_fingerprint == serverFingerprint
+    session.authenticate()
+
+    if session.is_authenticated_with_token:
+        logger.info('Success!')
+    else:
+        logger.info('Failed to authenticate to the server.')
