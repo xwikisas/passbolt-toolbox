@@ -63,7 +63,7 @@ class PassboltServer:
     """
     def importServerIdentity(self):
         importResult = self.keyring.import_keys(self.publicKey)
-        if importResult.counts['imported'] >= 1:
+        if importResult:
             self.logger.info(
                 'The key [{}] has been imported in the keyring but needs to be trusted before use'
                 .format(self.fingerprint)
