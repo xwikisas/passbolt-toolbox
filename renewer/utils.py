@@ -54,10 +54,27 @@ def parse_args():
         'renew',
         help='renew a set of passwords'
     )
-    renewParser.add_argument('filter', help='a filter to apply on the list of passwords to renew')
-    renewParser.add_argument('-l', '--limit', help='only update the n first passwords')
+    renewParser.add_argument('-g', '--groups',
+                             nargs='?',
+                             help='groups in which the password should be included')
+    renewParser.add_argument('-b', '--before',
+                            type=valid_date,
+                            help='date before which the password should have been updated')
+    renewParser.add_argument('-a', '--after',
+                             type=valid_date,
+                             help='date after which the password should have been updated')
+    renewParser.add_argument('-l', '--limit',
+                             type=int,
+                             help='only update the n first passwords')
 
     return rootParser.parse_args()
+
+def valid_date(string):
+    try:
+        return datetime.strptime(string, "%m-%Y")
+    except ValueError:
+        msg = "Not a valid date: [{}].".format(string)
+        raise argparse.ArgumentTypeError(msg)
 
 def display_trust_instructions(logger, fingerprint):
     logger.info('Please run the following to trust the key : ')

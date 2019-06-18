@@ -1,8 +1,11 @@
 import logging
 import requests
 
+from requests.utils import dict_from_cookiejar
+
 from configuration import Environment
 
+from gpgauth import GPGAuthSessionWrapper
 from utils import display_trust_instructions
 
 # Defines a Passbolt instance with its fingerprint, its url, ...
@@ -15,6 +18,7 @@ class PassboltServer:
         self.fingerprint = self.configManager.server()['fingerprint']
         self.uri = self.configManager.server()['uri']
         self.verifyCert = self.configManager.server()['verifyCert']
+        self.csrfToken = None
 
     def __str__(self):
         return '> Server URI : {}\n> Server fingerprint : {}\n'.format(self.uri, self.fingerprint)
@@ -22,15 +26,18 @@ class PassboltServer:
     def __buildURI(self, path):
         return '{}/{}'.format(self.uri, path)
 
-    def __buildHeaders(self, csrfToken):
+    def __buildHeaders(self):
         baseHeaders = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
 
-        if csrfToken:
-            baseHeaders['X-CSRF-TOKEN'] = csrfToken
+        if self.csrfToken:
+            baseHeaders['X-CSRF-TOKEN'] = self.csrfToken
         return baseHeaders
+
+    def __updateCSRFToken(self):
+        self.csrfToken = dict_from_cookiejar(self.session.cookies)['csrfToken']
 
     def setURI(self, uri):
         self.uri = uri
@@ -44,7 +51,7 @@ class PassboltServer:
 
         serverResponse = requests.get(
             self.__buildURI('/auth/verify.json'),
-            headers=self.__buildHeaders(None),
+            headers=self.__buildHeaders(),
             verify=self.verifyCert
         )
 
@@ -85,3 +92,70 @@ class PassboltServer:
         serverConfiguration['uri'] = self.uri
         serverConfiguration['verifyCert'] = self.verifyCert
         self.configManager.persist()
+
+    def authenticate(self, userFingerprint):
+        self.session = GPGAuthSessionWrapper(
+            gpg=self.keyring,
+            server_url=self.uri,
+            user_fingerprint=userFingerprint,
+            verify=self.verifyCert
+        )
+
+        assert self.session.server_fingerprint == self.fingerprint
+        self.session.authenticate()
+
+        return self.session.is_authenticated_with_token
+
+    def fetchGroupInformation(self, groupID):
+        pass
+
+    def resolveGroupsByName(self, groupNames):
+        # Start by getting the list of groups on the server
+        serverResponse = self.session.get(
+            self.__buildURI('/groups.json'),
+            headers=self.__buildHeaders(),
+            verify=self.verifyCert
+        )
+
+        resolvedGroups = []
+
+        # Lower each of the group names to reduce the risk of failed maching due to bad case
+        groupNames = [x.lower() for x in groupNames]
+
+        # Find the correct group name
+        # XXX : Verify server response
+        jsonResponse = serverResponse.json()['body']
+        
+        for currentGroup in jsonResponse:
+            currentGroupName = currentGroup['Group']['name']
+            self.logger.debug('Looking at group [{}]'.format(currentGroupName))
+            if currentGroupName.lower() in groupNames:
+                # Get more information about the group
+                serverResponse = self.session.get(
+                    self.__buildURI('/groups/{}.json'.format(currentGroup['Group']['id'])),
+                    headers=self.__buildHeaders(),
+                    verify=self.verifyCert
+                )
+
+                # XXX : Verify server response
+                resolvedGroups.append(serverResponse.json()['body'])
+
+        if len(resolvedGroups) == 0:
+            raise ValueError('No group found with names [{}].'.format(groupNames))
+        else:
+            return resolvedGroups
+
+    def fetchAllPasswords(self):
+        serverResponse = self.session.get(
+            self.__buildURI('/resources.json'),
+            params={'contain[permission]': 1,
+                    'contain[secret]': 1,
+                    'contain[tag]': 1},
+            headers=self.__buildHeaders(),
+            verify=self.verifyCert
+        )
+
+        self.__updateCSRFToken()
+
+        return serverResponse.json()['body']
+
