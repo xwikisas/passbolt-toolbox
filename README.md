@@ -156,4 +156,11 @@ Key not changed so no update needed.
 you@yourMachine:~ % 
 ```
 
+### Testing the configuration
 
+Once everything is done, you can validate your configuration by running :
+```
+passbolt-renewer test
+```
+
+This will simply test the authentication on the Passbolt server.
