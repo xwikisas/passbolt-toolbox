@@ -10,13 +10,13 @@ class Connector:
     """
     def __init__(self, resource, oldPassword, newPassword):
         self.resource = resource
-        self.resourceURI = resource['uri']
-        self.resourceUsername = resource['username']
+        self.resourceURI = resource['Resource']['uri']
+        self.resourceUsername = resource['Resource']['username']
         self.oldPassword = oldPassword
         self.newPassword = newPassword
 
     """
     Update the password on its related service. Should return True if the update succeeds, otherwise False
     """
-    def updatePassword():
+    def updatePassword(self):
         raise NotImplementedError("Please implement this method")

@@ -1,3 +1,4 @@
+import json
 import logging
 import requests
 
@@ -106,8 +107,14 @@ class PassboltServer:
 
         return self.session.is_authenticated_with_token
 
-    def fetchGroupInformation(self, groupID):
-        pass
+    def fetchGroupByID(self, groupID):
+        serverResponse = self.session.get(
+            self.__buildURI('/groups/{}.json'.format(groupID)),
+            headers=self.__buildHeaders(),
+            verify=self.verifyCert
+        )
+
+        return serverResponse.json()['body']
 
     def resolveGroupsByName(self, groupNames):
         # Start by getting the list of groups on the server
@@ -130,32 +137,39 @@ class PassboltServer:
             currentGroupName = currentGroup['Group']['name']
             self.logger.debug('Looking at group [{}]'.format(currentGroupName))
             if currentGroupName.lower() in groupNames:
-                # Get more information about the group
-                serverResponse = self.session.get(
-                    self.__buildURI('/groups/{}.json'.format(currentGroup['Group']['id'])),
-                    headers=self.__buildHeaders(),
-                    verify=self.verifyCert
-                )
-
-                # XXX : Verify server response
-                resolvedGroups.append(serverResponse.json()['body'])
+                resolvedGroups.append(currentGroup)
 
         if len(resolvedGroups) == 0:
             raise ValueError('No group found with names [{}].'.format(groupNames))
         else:
             return resolvedGroups
 
-    def fetchAllPasswords(self):
+    def fetchResourcesForGroups(self, groupIDs):
         serverResponse = self.session.get(
             self.__buildURI('/resources.json'),
-            params={'contain[permission]': 1,
+            params={'contain[permissions.group]': 1,
+                    'contain[permission.user.profile]': 1,
                     'contain[secret]': 1,
-                    'contain[tag]': 1},
+                    'contain[tag]': 1,
+                    'filter[is-shared-with-group]': groupIDs},
             headers=self.__buildHeaders(),
             verify=self.verifyCert
         )
-
         self.__updateCSRFToken()
 
         return serverResponse.json()['body']
 
+    def updatePassword(self, resourceID, secretsPayload):
+        serverResponse = self.session.put(
+            self.__buildURI('/resources/{}.json'.format(resourceID)),
+            data=json.dumps({'secrets': secretsPayload}),
+            headers=self.__buildHeaders(),
+            verify=self.verifyCert
+        )
+
+        if serverResponse.status_code == 200:
+            self.logger.info('Successfully updated password [{}]'.format(resourceID))
+        else:
+            self.logger.error('Failed to update the password !')
+            self.logger.error(secretsPayload)
+            self.logger.debug(vars(serverResponse))
