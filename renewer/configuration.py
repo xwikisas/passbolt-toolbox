@@ -35,15 +35,21 @@ class ConfigManager:
     # can be used for encryption / decryption
     def __ensureGPGConfiguration(self):
         gpgConfigFile = '{}/gpg.conf'.format(Environment.keyringDir)
-        trustModelInstruction = 'trust-model always'
+        trustModelInstruction = 'trust-model always\n'
 
-        with open(gpgConfigFile, 'a+') as f:
-            fileLines = f.readlines()
-            if trustModelInstruction not in fileLines:
+        needGPGConfig = True
+        if os.path.isfile(gpgConfigFile):
+            with open(gpgConfigFile, 'r') as f:
+                fileLines = f.readlines()
+                if trustModelInstruction in fileLines:
+                    needGPGConfig = False
+
+        if needGPGConfig:
+            with open(gpgConfigFile, 'a+') as f:
                 self.logger.info('Updating [{}] to set the GnuPG trust-model'.format(gpgConfigFile))
                 f.write('\n')
                 f.write('# Automatically added by Passbolt Renewer\n')
-                f.write('{}\n'.format(trustModelInstruction))
+                f.write(trustModelInstruction)
 
     def __loadConfig(self):
         baseConfigDir = os.path.dirname(Environment.configFilePath)
