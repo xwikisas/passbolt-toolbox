@@ -132,7 +132,7 @@ class PassboltServer:
         # Find the correct group name
         # XXX : Verify server response
         jsonResponse = serverResponse.json()['body']
-        
+
         for currentGroup in jsonResponse:
             currentGroupName = currentGroup['Group']['name']
             self.logger.debug('Looking at group [{}]'.format(currentGroupName))
@@ -170,6 +170,6 @@ class PassboltServer:
         if serverResponse.status_code == 200:
             self.logger.info('Successfully updated password [{}]'.format(resourceID))
         else:
-            self.logger.error('Failed to update the password !')
-            self.logger.error(secretsPayload)
+            self.logger.error('Failed to update the password [{}] !'.format(resourceID))
+            self.logger.error('Encrypted payload : [{}]'.format(secretsPayload))
             self.logger.debug(vars(serverResponse))

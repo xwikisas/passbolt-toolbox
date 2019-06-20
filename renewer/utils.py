@@ -11,6 +11,7 @@ from configuration import Environment
 
 def init_logger(logLevel):
     rootLogger = logging.getLogger()
+    logging.captureWarnings(True)
 
     if (logLevel >= 1):
         rootLogger.setLevel(logging.DEBUG)
