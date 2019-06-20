@@ -1,4 +1,5 @@
 import logging
+import re
 
 from configuration import Environment
 
@@ -8,6 +9,8 @@ from secrets import token_urlsafe
 
 class RenewHelper:
     logger = logging.getLogger('RenewHelper')
+    # Used in regex, shouldn't contain unescaped regex modifiers
+    lastUpdatePattern = '^>>> Last password update : (.*)$'
 
     def __init__(self, configManager, keyring, passboltServer):
         self.configManager = configManager
@@ -38,11 +41,15 @@ class RenewHelper:
                     resourceUsersMap = {}
 
                     # List the groups to which this resource belongs
+                    resourceUserIDs = []
                     resourceGroupIDs = []
                     for permissionSet in resource['Permission']:
                         if permissionSet['aro'] == 'Group':
-                            resourceGroupIDs.append(permissionSet['Group']['id'])
-                    # TODO : Do the same for users
+                            resourceGroupIDs.append(permissionSet['aro_foreign_key'])
+                        elif permissionSet['aro'] == 'User':
+                            resourceUserIDs.append(permissionSet['aro_foreign_key'])
+
+                    # TODO : Add user cache
                     # Resolve users in the given groups
                     # TODO : Add group cache
                     for resourceGroupID in resourceGroupIDs:
@@ -50,6 +57,13 @@ class RenewHelper:
                         self.__maybeImportGroupUsers(group['GroupUser'])
                         for groupUser in group['GroupUser']:
                             resourceUsersMap[groupUser['User']['id']] = groupUser['User']['Gpgkey']['key_id']
+
+                    for resourceUserID in resourceUserIDs:
+                        # The user might also be in a group, in that case, it's useless to add it twice
+                        if resourceUserID not in resourceUsersMap:
+                            user = self.passboltServer.fetchUserByID(resourceUserID)
+                            self.__maybeImportUser(user)
+                            resourceUsersMap[resourceUserID] = user['Gpgkey']['key_id']
 
                     # We now have a map of user IDs with their key ID, that way we can proceed to
                     # the encryption of the new password.
@@ -80,17 +94,46 @@ class RenewHelper:
         # Get every password corresponding to the groups
         groupsIDs = [x['Group']['id'] for x in groups]
         self.logger.debug('Groups IDs : [{}]'.format(groupsIDs))
-        resources = self.passboltServer.fetchResourcesForGroups(groupsIDs)
+        rawResources = self.passboltServer.fetchResourcesForGroups(groupsIDs)
 
         # Remove every resource having a date not valid
-        # TODO: Implement Tag filtering
-        return resources
+        filteredResources = []
+        for resource in rawResources:
+            resourceDescription = resource['Resource']['description']
+
+            if resourceDescription is not None:
+                updateDateLines = re.findall(self.lastUpdatePattern, resourceDescription, re.MULTILINE)
+                self.logger.error(updateDateLines)
+
+                # We will only consider the first line with the date for filtering
+                if len(updateDateLines) != 0:
+                    pass
+                else:
+                    # Assume that the password needs to be initialized
+                    filteredResources.append(resource)
+            else:
+                # Assume that the password needs to be initialized
+                filteredResources.append(resource)
+
+        return filteredResources
 
     def __renewResource(self, resource, newPassword):
         # Decrypt the old password
         oldPassword = self.keyring.decrypt(resource['Secret'][0]['data'])
         connector = XWikiConnector(resource, oldPassword, newPassword)
         return connector.updatePassword()
+
+    def __maybeImportUser(self, user):
+        userKeyId = user['Gpgkey']['key_id']
+        if (userKeyId not in self.keysInKeyring
+                and userKeyId not in self.addedKeysCache):
+            self.logger.info('Importing missing public key for {} {} ({})'
+                             .format(user['Profile']['first_name'], user['Profile']['last_name'], userKeyId))
+            importResult = self.keyring.import_keys(user['Gpgkey']['armored_key'])
+            if importResult:
+                self.addedKeysCache.append(userKeyId)
+            else:
+                self.logger.error('Failed to import key [{}] in the keyring'.format(userKeyId))
 
     # Make sure that the given Users are present in the local keyring
     def __maybeImportGroupUsers(self, groupUsers):

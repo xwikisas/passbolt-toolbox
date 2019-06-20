@@ -101,6 +101,15 @@ class PassboltServer:
 
         return self.session.is_authenticated_with_token
 
+    def fetchUserByID(self, userID):
+        serverResponse = self.session.get(
+            self.__buildURI('/users/{}.json'.format(userID)),
+            headers=self.__buildHeaders(),
+            verify=self.verifyCert
+        )
+
+        return serverResponse.json()['body']
+
     def fetchGroupByID(self, groupID):
         serverResponse = self.session.get(
             self.__buildURI('/groups/{}.json'.format(groupID)),
