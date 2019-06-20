@@ -7,7 +7,6 @@ from requests.utils import dict_from_cookiejar
 from configuration import Environment
 
 from gpgauth import GPGAuthSessionWrapper
-from utils import display_trust_instructions
 
 # Defines a Passbolt instance with its fingerprint, its url, ...
 class PassboltServer:
@@ -72,12 +71,7 @@ class PassboltServer:
     def importServerIdentity(self):
         importResult = self.keyring.import_keys(self.publicKey)
         if importResult:
-            self.logger.info(
-                'The key [{}] has been imported in the keyring but needs to be trusted before use'
-                .format(self.fingerprint)
-            )
-
-            display_trust_instructions(self.logger, self.fingerprint)
+            self.logger.info('The key [{}] has been imported in the keyring'.format(self.fingerprint))
         else:
             self.logger.error('Something went wrong : [{}] keys were imported in the keyring'
                          .format(importResult.counts['imported']))
@@ -159,7 +153,7 @@ class PassboltServer:
 
         return serverResponse.json()['body']
 
-    def updatePassword(self, resourceID, secretsPayload):
+    def updateResource(self, resourceID, secretsPayload):
         serverResponse = self.session.put(
             self.__buildURI('/resources/{}.json'.format(resourceID)),
             data=json.dumps({'secrets': secretsPayload}),
@@ -168,7 +162,7 @@ class PassboltServer:
         )
 
         if serverResponse.status_code == 200:
-            self.logger.info('Successfully updated password [{}]'.format(resourceID))
+            self.logger.info('Successfully updated resource [{}]'.format(resourceID))
         else:
             self.logger.error('Failed to update the password [{}] !'.format(resourceID))
             self.logger.error('Encrypted payload : [{}]'.format(secretsPayload))

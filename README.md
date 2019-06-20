@@ -102,59 +102,7 @@ uid           [ unknown] Your Name <your email at xwiki.com>
 ssb   rsa2048 2019-05-28 [E]
 ```
 
-You will need to copy-paste your key fingerprint in the `user.fingerprint` field of `~/passbolt-renewer/config.json`.
-
-The last step is to make sure that your key is fully trusted by GnuPG. Without that, the authentication to the Passbolt will not work. Here is how to do it :
-
-```
-you@yourMachine:~ % gpg --homedir ~/.passbolt-renewer/gnupg --edit-key XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-gpg (GnuPG) 2.2.12; Copyright (C) 2018 Free Software Foundation, Inc.
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
-
-Secret key is available.
-
-sec  rsa2048/XXXXXXXXXXXXXXXX
-     created: 2019-05-28  expires: never       usage: SC  
-     trust: unknown       validity: unknown
-ssb  rsa2048/XXXXXXXXXXXXXXXX
-     created: 2019-05-28  expires: never       usage: E   
-[ unknown] (1). Your Name <your email at xwiki.com>
-
-gpg> trust
-sec  rsa2048/XXXXXXXXXXXXXXXX
-     created: 2019-05-28  expires: never       usage: SC  
-     trust: unknown       validity: unknown
-ssb  rsa2048/XXXXXXXXXXXXXXXX
-     created: 2019-05-28  expires: never       usage: E   
-[ unknown] (1). Your Name <your email at xwiki.com>
-
-Please decide how far you trust this user to correctly verify other users' keys
-(by looking at passports, checking fingerprints from different sources, etc.)
-
-  1 = I don't know or won't say
-  2 = I do NOT trust
-  3 = I trust marginally
-  4 = I trust fully
-  5 = I trust ultimately
-  m = back to the main menu
-
-Your decision? 5
-Do you really want to set this key to ultimate trust? (y/N) y
-
-sec  rsa2048/XXXXXXXXXXXXXXXX
-     created: 2019-05-28  expires: never       usage: SC  
-     trust: ultimate      validity: unknown
-ssb  rsa2048/XXXXXXXXXXXXXXXX
-     created: 2019-05-28  expires: never       usage: E   
-[ unknown] (1). Your Name <your email at xwiki.com>
-Please note that the shown key validity is not necessarily correct
-unless you restart the program.
-
-gpg> save
-Key not changed so no update needed.
-you@yourMachine:~ % 
-```
+Then, you will need to copy-paste your key fingerprint in the `user.fingerprint` field of `~/passbolt-renewer/config.json`.
 
 ### Testing the configuration
 

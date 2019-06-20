@@ -3,7 +3,6 @@ import sys
 
 from passbolt import PassboltServer
 from utils import ask_question
-from utils import display_trust_instructions
 
 class SetupHelper:
     logger = logging.getLogger('SetupHelper')
@@ -54,7 +53,6 @@ class SetupHelper:
         print('Server URI : ')
         self.passboltServer.setURI()
 
-
     def setupServer(self):
         self.__displaySetupBanner('Server setup')
 
@@ -78,20 +76,3 @@ class SetupHelper:
                 return
 
         self.logger.info('Aborting server setup')
-
-    # Not used yet
-    def setupUser(self):
-        if self.__checkExistingUserConfiguration():
-            # Get the user key
-            sys.stdout.write('User private key path : ')
-            privateKeyPath = input()
-
-            with open(privateKeyPath, 'r') as privateKey:
-                importResult = self.keyring.import_keys(privateKey.read())
-
-                if importResult.counts['imported'] >= 1:
-                    logger.debug(importResult)
-                    #display_trust_instructions(self.logger, )
-                
-
-        self.logger.info('Aborting user setup')

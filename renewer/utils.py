@@ -55,9 +55,9 @@ def parse_args():
         'renew',
         help='renew a set of passwords'
     )
-    renewParser.add_argument('-g', '--groups',
-                             nargs='?',
-                             help='groups in which the password should be included')
+    renewParser.add_argument('-g', '--group',
+                             nargs=1,
+                             help='group in which the password should be included')
     renewParser.add_argument('-b', '--before',
                             type=valid_date,
                             help='date before which the password should have been updated')
@@ -76,15 +76,6 @@ def valid_date(string):
     except ValueError:
         msg = "Not a valid date: [{}].".format(string)
         raise argparse.ArgumentTypeError(msg)
-
-def display_trust_instructions(logger, fingerprint):
-    logger.info('Please run the following to trust the key : ')
-    commandLine = '> gpg --homedir {} --edit-key {}'.format(Environment.keyringDir, fingerprint)
-    logger.info(commandLine)
-    logger.info('> trust')
-    logger.info('> 5')
-    logger.info('> y')
-    logger.info('> save')
 
 def ask_question(question, defaultReturn):
     sys.stdout.write(question)
