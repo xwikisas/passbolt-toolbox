@@ -79,7 +79,7 @@ class PassboltServer:
             # TODO: Check if the key was present before
 
     """
-    Save the configuration of the server in the configuration file.
+    Save the server configuration.
     """
     def persist(self):
         serverConfiguration = self.configManager.server()
@@ -88,6 +88,10 @@ class PassboltServer:
         serverConfiguration['verifyCert'] = self.verifyCert
         self.configManager.persist()
 
+    """
+    Perform the GPGAuth authentication against the server. Returns True if the authentication is successful,
+    False otherwise.
+    """
     def authenticate(self, userFingerprint):
         self.session = GPGAuthSessionWrapper(
             gpg=self.keyring,
@@ -126,7 +130,6 @@ class PassboltServer:
             headers=self.__buildHeaders(),
             verify=self.verifyCert
         )
-
         resolvedGroups = []
 
         # Lower each of the group names to reduce the risk of failed maching due to bad case
@@ -143,7 +146,7 @@ class PassboltServer:
                 resolvedGroups.append(currentGroup)
 
         if len(resolvedGroups) == 0:
-            raise ValueError('No group found with names [{}].'.format(groupNames))
+            raise ValueError('No group found with name [{}].'.format(groupNames))
         else:
             return resolvedGroups
 
@@ -162,10 +165,13 @@ class PassboltServer:
 
         return serverResponse.json()['body']
 
-    def updateResource(self, resourceID, secretsPayload):
+    def updateResource(self, resourceID, description, secretsPayload):
+        payload = {'description': description, 'secrets': secretsPayload}
+        self.logger.debug('Will update resource with payload : [{}]'.format(payload))
+
         serverResponse = self.session.put(
             self.__buildURI('/resources/{}.json'.format(resourceID)),
-            data=json.dumps({'secrets': secretsPayload}),
+            data=json.dumps(payload),
             headers=self.__buildHeaders(),
             verify=self.verifyCert
         )

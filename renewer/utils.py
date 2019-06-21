@@ -3,10 +3,10 @@ import argparse
 import logging
 import sys
 
+from datetime import datetime
 from distutils.util import strtobool
 
 from gpgauth import GPGAuthSessionWrapper
-
 from configuration import Environment
 
 def init_logger(logLevel):
@@ -66,13 +66,18 @@ def parse_args():
                              help='date after which the password should have been updated')
     renewParser.add_argument('-l', '--limit',
                              type=int,
+                             default=0,
                              help='only update the n first passwords')
+    renewParser.add_argument('--dry-run',
+                             dest='dryRun',
+                             action='store_true',
+                             help='run through the renewal process without actually updating resources')
 
     return rootParser.parse_args()
 
 def valid_date(string):
     try:
-        return datetime.strptime(string, "%m-%Y")
+        return datetime.strptime(string, "%m/%Y")
     except ValueError:
         msg = "Not a valid date: [{}].".format(string)
         raise argparse.ArgumentTypeError(msg)
