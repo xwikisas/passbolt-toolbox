@@ -4,9 +4,8 @@ import requests
 
 from requests.utils import dict_from_cookiejar
 
-from configuration import Environment
-
 from gpgauth import GPGAuthSessionWrapper
+
 
 # Defines a Passbolt instance with its fingerprint, its url, ...
 class PassboltServer:
@@ -74,7 +73,7 @@ class PassboltServer:
             self.logger.info('The key [{}] has been imported in the keyring'.format(self.fingerprint))
         else:
             self.logger.error('Something went wrong : [{}] keys were imported in the keyring'
-                         .format(importResult.counts['imported']))
+                              .format(importResult.counts['imported']))
             self.logger.error('The key to import might already be present in the keyring')
             # TODO: Check if the key was present before
 

@@ -1,7 +1,5 @@
 import os
 
-from requests.sessions import Session
-
 from http.cookiejar import MozillaCookieJar
 
 from requests_gpgauthlib import GPGAuthSession
@@ -12,6 +10,8 @@ from requests_gpgauthlib.utils import get_workdir
 Wraps the GPGAuthSession provided by the gpgauthlib package to allow
 requests to be sent to the Passbolt instance with an incomplete certificate (verify=False)
 """
+
+
 class GPGAuthSessionWrapper(GPGAuthSession):
     def __init__(self, gpg, server_url, user_fingerprint, verify, **kwargs):
         # Skip GPGAuthSession.__init__

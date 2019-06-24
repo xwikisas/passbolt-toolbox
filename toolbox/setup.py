@@ -4,6 +4,7 @@ import sys
 from passbolt import PassboltServer
 from utils import ask_question
 
+
 class SetupHelper:
     logger = logging.getLogger('SetupHelper')
 
@@ -25,12 +26,12 @@ class SetupHelper:
     """
     def __checkExistingServerConfiguration(self):
         if (self.passboltServer.fingerprint
-                or self.passboltServer.uri):
-           return ask_question(
-               'A server configuration for [{}] is already present, continue ? [yes / NO] '
-               .format(self.passboltServer.uri),
-               False
-           )
+           or self.passboltServer.uri):
+            return ask_question(
+                'A server configuration for [{}] is already present, continue ? [yes / NO] '
+                .format(self.passboltServer.uri),
+                False
+            )
         else:
             return True
 
@@ -41,11 +42,11 @@ class SetupHelper:
     """
     def __checkExistingUserConfiguration(self):
         if (self.configManager.user()['fingerprint']):
-           return ask_question(
-               'A configuration for the user [{}] is already present, continue ? [yes / NO] '
-               .format(self.configManager.user()['fingerprint']),
-               False
-           )
+            return ask_question(
+                'A configuration for the user [{}] is already present, continue ? [yes / NO] '
+                .format(self.configManager.user()['fingerprint']),
+                False
+            )
         else:
             return True
 

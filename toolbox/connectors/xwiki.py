@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 from .meta import Connector
 
+
 class XWikiHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if tag == 'html':
@@ -18,6 +19,7 @@ class XWikiHTMLParser(HTMLParser):
         self.foundRESTURL = ''
         super(XWikiHTMLParser, self).feed(data)
         return self.foundRESTURL
+
 
 class XWikiConnector(Connector):
     logger = logging.getLogger('XWikiConnector')

@@ -7,7 +7,7 @@ from datetime import datetime
 from distutils.util import strtobool
 
 from gpgauth import GPGAuthSessionWrapper
-from configuration import Environment
+
 
 def init_logger(logLevel):
     rootLogger = logging.getLogger()
@@ -25,6 +25,7 @@ def init_logger(logLevel):
     handler.setFormatter(formatter)
     rootLogger.addHandler(handler)
 
+
 def parse_args():
     rootParser = argparse.ArgumentParser(
         prog='passbolt-toolbox',
@@ -39,13 +40,13 @@ def parse_args():
     )
 
     # Setup utils
-    setupParser = subParsers.add_parser(
+    subParsers.add_parser(
         'setup',
         help='setup the tool to work on a specific Passbolt server'
     )
 
     # Test utils
-    testParser = subParsers.add_parser(
+    subParsers.add_parser(
         'test',
         help='verify the tool configuration by authenticating to the configured Passbolt server'
     )
@@ -59,8 +60,8 @@ def parse_args():
                              nargs=1,
                              help='group in which the password should be included')
     renewParser.add_argument('-b', '--before',
-                            type=valid_date,
-                            help='date before which the password should have been updated')
+                             type=valid_date,
+                             help='date before which the password should have been updated')
     renewParser.add_argument('-a', '--after',
                              type=valid_date,
                              help='date after which the password should have been updated')
@@ -75,6 +76,7 @@ def parse_args():
 
     return rootParser.parse_args()
 
+
 def valid_date(string):
     try:
         return datetime.strptime(string, "%m/%Y")
@@ -82,12 +84,14 @@ def valid_date(string):
         msg = "Not a valid date: [{}].".format(string)
         raise argparse.ArgumentTypeError(msg)
 
+
 def ask_question(question, defaultReturn):
     sys.stdout.write(question)
     try:
         return strtobool(input())
-    except ValueError as e:
+    except ValueError:
         return defaultReturn
+
 
 def test_configuration(logger, configuration, keyring):
     serverURI = configuration.server()['uri']

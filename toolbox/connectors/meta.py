@@ -2,6 +2,8 @@
 Parent class for defining connectors, those connectors are in charge of updating the password
 of a specific service using the information they get at initialization.
 """
+
+
 class Connector:
     """
     @param resource : information about the resource to update (server url, description, username, ...)

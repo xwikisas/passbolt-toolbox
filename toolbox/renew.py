@@ -1,10 +1,9 @@
 import logging
-import re
 
-from configuration import Environment
 from connectors.xwiki import XWikiConnector
 from resource import Resource
 from secrets import token_urlsafe
+
 
 class RenewHelper:
     logger = logging.getLogger('RenewHelper')
@@ -24,7 +23,7 @@ class RenewHelper:
             resources = self.__fetchResources(args)
             self.logger.info('Found [{}] resources to renew'.format(len(resources)))
 
-            if args.limit is not 0 and len(resources) >= args.limit:
+            if args.limit != 0 and len(resources) >= args.limit:
                 self.logger.info('Limiting renewal to the first [{}] resources'.format(args.limit))
                 resources = resources[:len(resources) - args.limit]
 
@@ -107,10 +106,9 @@ class RenewHelper:
         for rawResource in rawResources:
             resource = Resource(rawResource)
 
-            if ((args.before or args.after)
-                and resource.lastUpdateDate is not None):
+            if (args.before or args.after) and resource.lastUpdateDate is not None:
                 if ((not args.before or resource.lastUpdateDate <= args.before)
-                    and (not args.after or resource.lastUpdateDate >= args.after)):
+                   and (not args.after or resource.lastUpdateDate >= args.after)):
                     filteredResources.append(resource)
             else:
                 # Assume that the password needs to be initialized

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import argparse
 import logging
 
 from gnupg import GPG
@@ -29,7 +28,7 @@ if args.action == 'setup':
     setupHelper = SetupHelper(configManager, keyring)
     setupHelper.setupServer()
     # The user setup is not working yet, so we don't use it
-    #setupHelper.setupUser()
+    # setupHelper.setupUser()
 elif args.action == 'test':
     test_configuration(logger, configManager, keyring)
 elif args.action == 'renew':

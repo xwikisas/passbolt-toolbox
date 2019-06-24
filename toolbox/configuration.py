@@ -4,11 +4,13 @@ import os
 import os.path
 import stat
 
+
 class Environment:
     configDir = '{}/.passbolt-toolbox'.format(os.getenv('HOME'))
     configFilePath = '{}/config.json'.format(configDir)
     keyringDir = '{}/gnupg'.format(configDir)
     privateKeysDir = '{}/private-keys-v1.d'.format(keyringDir)
+
 
 class ConfigManager:
     logger = logging.getLogger('ConfigManager')
@@ -65,7 +67,8 @@ class ConfigManager:
             )
             with open(Environment.configFilePath, 'w+') as emptyFile:
                 # The default minimal configuration
-                emptyFile.write('{"server": {"fingerprint": "", "uri": "", "verifyCert": true}, "user": {"fingerprint": ""}}')
+                emptyFile.write('''{"server": {"fingerprint": "", "uri": "", "verifyCert": true},
+                "user": {"fingerprint": ""}}''')
 
         with open(Environment.configFilePath, 'r+') as configFile:
             self.config = json.load(configFile)
