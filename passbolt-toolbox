@@ -19,4 +19,4 @@ SCRIPT_DIR=$(get_script_dir)
 
 
 source $SCRIPT_DIR/venv/bin/activate
-$SCRIPT_DIR/renewer/./main.py $@
+$SCRIPT_DIR/toolbox/./main.py $@

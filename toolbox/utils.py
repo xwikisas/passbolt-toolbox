@@ -1,4 +1,4 @@
-# Define a set of utility fuctions for the renewer
+# Define a set of utility fuctions for the toolbox
 import argparse
 import logging
 import sys
@@ -27,8 +27,8 @@ def init_logger(logLevel):
 
 def parse_args():
     rootParser = argparse.ArgumentParser(
-        prog='passbolt-renewer',
-        description='Auto-renew passwords coming from Passbolt on various services.'
+        prog='passbolt-toolbox',
+        description='Toolbox to interact with various Passbolt-related services.'
     )
     rootParser.add_argument('-v', '--verbose', action='count', default=0, help='enable verbose logs')
 

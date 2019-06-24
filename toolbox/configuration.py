@@ -5,7 +5,7 @@ import os.path
 import stat
 
 class Environment:
-    configDir = '{}/.passbolt-renewer'.format(os.getenv('HOME'))
+    configDir = '{}/.passbolt-toolbox'.format(os.getenv('HOME'))
     configFilePath = '{}/config.json'.format(configDir)
     keyringDir = '{}/gnupg'.format(configDir)
     privateKeysDir = '{}/private-keys-v1.d'.format(keyringDir)
@@ -48,7 +48,7 @@ class ConfigManager:
             with open(gpgConfigFile, 'a+') as f:
                 self.logger.info('Updating [{}] to set the GnuPG trust-model'.format(gpgConfigFile))
                 f.write('\n')
-                f.write('# Automatically added by Passbolt Renewer\n')
+                f.write('# Automatically added by Passbolt Toolbox\n')
                 f.write(trustModelInstruction)
 
     def __loadConfig(self):
