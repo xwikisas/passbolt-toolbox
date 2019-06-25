@@ -155,7 +155,6 @@ class PassboltServer:
             params={'contain[permissions.group]': 1,
                     'contain[permission.user.profile]': 1,
                     'contain[secret]': 1,
-                    'contain[tag]': 1,
                     'filter[is-shared-with-group]': groupIDs},
             headers=self.__buildHeaders(),
             verify=self.verifyCert
@@ -178,6 +177,5 @@ class PassboltServer:
         if serverResponse.status_code == 200:
             self.logger.info('Successfully updated resource [{}]'.format(resourceID))
         else:
-            self.logger.error('Failed to update the password [{}] !'.format(resourceID))
-            self.logger.error('Encrypted payload : [{}]'.format(secretsPayload))
+            self.logger.error('Failed to update the password [{}] on Passbolt !'.format(resourceID))
             self.logger.debug(vars(serverResponse))

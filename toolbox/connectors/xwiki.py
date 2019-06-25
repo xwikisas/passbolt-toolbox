@@ -3,6 +3,7 @@ import requests
 
 from html.parser import HTMLParser
 from requests.auth import HTTPBasicAuth
+from requests.exceptions import RequestException
 from urllib.parse import urlparse
 
 from .meta import Connector
@@ -29,30 +30,51 @@ class XWikiConnector(Connector):
         'Accept': 'application/json'
     }
 
+    def __sendPasswordUpdateRequest(self, oldPassword, newPassword):
+        try:
+            result = requests.put(
+                '{}/wikis/xwiki/spaces/XWiki/pages/{}/objects/XWiki.XWikiUsers/0/properties/password'
+                .format(self.restRootURL, self.resourceUsername),
+                data=newPassword,
+                auth=HTTPBasicAuth(self.resourceUsername, oldPassword),
+                verify=False,
+                headers=self.headers)
+            self.logger.debug('Server response : [{}]'.format(result.content))
+
+            return result.status_code == 202
+        except RequestException as e:
+            self.logger.error('Communication with the XWiki server failed : [{}]'.format(e))
+            return False
+
     def updatePassword(self):
-        # First step, try to reach the instance using the link provided
-        result = requests.get(self.resource['Resource']['uri'], verify=False)
-        # Find the REST URL given in the page we are dealing with
-        # Here we'll make the assumption that the REST endpoint of XWiki will always end with "/rest"
-        # thus, we can have :
-        # mywiki.org/rest
-        # mywiki.org/xwiki/rest
-        # ... which covers most of the use cases
-        restRawPath = self.parser.feed(result.content.decode('utf-8'))
-        restRootPath = restRawPath.split('rest')[0] + 'rest'
-        parsedURL = urlparse(self.resource['Resource']['uri'])
-        # Compute the protocol + host part of the url
-        baseURL = '{}://{}'.format(parsedURL.scheme, parsedURL.netloc)
-        restRootURL = baseURL + restRootPath
+        self.resourceUsername = self.resource['Resource']['username']
 
-        resourceUsername = self.resource['Resource']['username']
-        result = requests.put(
-            '{}/wikis/xwiki/spaces/XWiki/pages/{}/objects/XWiki.XWikiUsers/0/properties/password'
-            .format(restRootURL, resourceUsername),
-            data=self.newPassword,
-            auth=HTTPBasicAuth(resourceUsername, self.oldPassword),
-            verify=False,
-            headers=self.headers)
-        self.logger.debug('Server response : [{}]'.format(result.content))
+        try:
+            # First step, try to reach the instance using the link provided
+            result = requests.get(self.resource['Resource']['uri'], verify=False)
+            # Find the REST URL given in the page we are dealing with
+            # Here we'll make the assumption that the REST endpoint of XWiki will always end with "/rest"
+            # thus, we can have :
+            # mywiki.org/rest
+            # mywiki.org/xwiki/rest
+            # ... which covers most of the use cases
+            restRawPath = self.parser.feed(result.content.decode('utf-8'))
+            if restRawPath == '' or restRawPath is None:
+                self.logger.error('Failed to get the REST API path for the XWiki server.')
+                return False
 
-        return result.status_code == 202
+            restRootPath = restRawPath.split('rest')[0] + 'rest'
+            parsedURL = urlparse(self.resource['Resource']['uri'])
+            # Compute the protocol + host part of the url
+            baseURL = '{}://{}'.format(parsedURL.scheme, parsedURL.netloc)
+
+            # Store the root URL in case we need it in #rollbackPasswordUpdate()
+            self.restRootURL = baseURL + restRootPath
+
+            return self.__sendPasswordUpdateRequest(self.oldPassword, self.newPasword)
+        except RequestException as e:
+            self.logger.error('Communication with the XWiki server failed : [{}]'.format(e))
+            return False
+
+    def rollbackPasswordUpdate(self):
+        return self.__sendPasswordUpdateRequest(self.newPassword, self.oldPassword)

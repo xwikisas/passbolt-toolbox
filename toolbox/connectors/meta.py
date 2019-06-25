@@ -22,3 +22,11 @@ class Connector:
     """
     def updatePassword(self):
         raise NotImplementedError("Please implement this method")
+
+    """
+    Rollback the previously updated password. Should return True if the rollback succeeded, otherwise False.
+    This method will always be called after #updatePassword(), thus it can take advantage of connector attributes
+    created during the first call.
+    """
+    def rollbackPasswordUpdate(self):
+        raise NotImplementedError("Please implement this method")

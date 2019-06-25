@@ -35,7 +35,8 @@ class RenewHelper:
                 # Generate the new password
                 newPassword = token_urlsafe(32)
 
-                if args.dryRun or self.__renewResource(resource, newPassword):
+                connector = self.__createConnector(resource, newPassword)
+                if args.dryRun or connector.updatePassword():
                     self.logger.debug('Renew success ! Updating resource on Passbolt ...')
                     resource.markAsUpdated()
 
@@ -79,10 +80,22 @@ class RenewHelper:
                             'data': self.keyring.encrypt(newPassword, userKeyID).data.decode('utf-8')
                         })
 
-                    if (args.dryRun
-                        or self.passboltServer.updateResource(resourceID,
-                                                              resource.generateDescription(), secretsPayload)):
-                        self.logger.info('Resource "{}" renewed and updated'.format(resourceName))
+                    if args.dryRun:
+                        if self.passboltServer.updateResource(resourceID,
+                                                              resource.generateDescription(), secretsPayload):
+                            self.logger.info('Resource "{}" renewed and updated'.format(resourceName))
+                        else:
+                            self.logger.error('Failed to renew resource "{}" [{}], rolling back ...'
+                                              .format(resourceName, resourceID))
+                            if connector.rollbackPassword():
+                                self.logger.info('Password successfully rolled back')
+                            else:
+                                self.logger.error('''*** Heads up ! *** Password has been updated on the service,
+                                but could not be saved on Passbolt. Password rollback also failed.''')
+                                self.logger.error(secretsPayload)
+                    else:
+                        self.logger.info('Skipping the update of "{}" on Passbolt as dry-run is activated'
+                                         .format(resourceName))
                 else:
                     self.logger.error('Failed to renew resource "{}" [{}]'.format(resourceName, resourceID))
         else:
@@ -116,11 +129,10 @@ class RenewHelper:
 
         return filteredResources
 
-    def __renewResource(self, resource, newPassword):
+    def __createConnector(self, resource, newPassword):
         # Decrypt the old password
         oldPassword = self.keyring.decrypt(resource['Secret'][0]['data'])
-        connector = XWikiConnector(resource, oldPassword, newPassword)
-        return connector.updatePassword()
+        return XWikiConnector(resource, oldPassword, newPassword)
 
     def __maybeImportKey(self, armoredKey, keyID, firstName, lastName):
         if (keyID not in self.keysInKeyring
