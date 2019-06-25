@@ -1,15 +1,11 @@
-# Passbolt auto-renewer
+# Passbolt Toolbox
 
-This tool allows to quickly update a given set of passwords from passbolt. It will help you doing so by automatically :
+This tools provides various functionalities around a Passbolt instance, the main one being its capacity to ease
+the automated renewal of passwords.
 
-* Select a set of passwords based on multiple criterias
-* Create a new password
-* Update the password where it is defined (API, Apache2 HTTP Basic, XWiki, ...)
-* Update the password in Passbolt
+## Technical overview
 
-## Overview
-
-On its first start, the tool will create a directory `~/.password-renewer` storing all of its configuration, this includes :
+On its first start, the tool will create a directory `~/.password-toolbox` storing all of its configuration, this includes :
 * The tool configuration
 * The GnuPG keyring used by the tool
 
@@ -18,7 +14,7 @@ In order to properly communicate with Passbolt, the tool needs to know the follo
 * The private key of the user that you will use for authentication on the server (this key should also be *ultimately* trusted)
 * The address of the server
 
-Those information are stored in `~/.passbolt-renewer/config.json`. You can refer to this file in case something goes wrong. Here is an example a file :
+Those information are stored in `~/.passbolt-toolbox/config.json`. You can refer to this file in case something goes wrong. Here is an example a file :
 
 ```
 {
@@ -48,8 +44,8 @@ Make sure that you have those three dependencies satisfied before going further.
 
 Clone the project repository :
 ```
-git clone git@git.xwikisas.com:passbolt-tools/renewer.git
-cd renewer
+git clone https://github.com/xwikisas/passbolt-toolbox.git
+cd passbolt-toolbox
 ```
 
 Set-up the virtual environment :
@@ -77,7 +73,7 @@ In order to understand the following steps, please refer to the *Overview* secti
 
 We'll first start by configuring the Passbolt server. As getting the public key of the server is usually teadious without relying on the REST API of the server, this step is partially automated.
 
-You can run `passbolt-renewer setup` to start the setup of the server. If a server was previously set up, the tool will ask before overwriting the server configuration.
+You can run `passbolt-toolbox setup` to start the setup of the server. If a server was previously set up, the tool will ask before overwriting the server configuration.
 
 > In case your server is configured with HTTPS but does not provide its [certificate chain](https://support.dnsimple.com/articles/what-is-ssl-certificate-chain/), you will need to answer YES to the question `Trust the server certficate without verification ?`.
 
@@ -89,12 +85,12 @@ This part is not automated yet :/ however, it's supposed to be more simple than 
 
 First, import your key in the application keyring :
 ```
-gpg --homedir ~/.passbolt-renewer/gnupg --import <your_file>
+gpg --homedir ~/.passbolt-toolbox/gnupg --import <your_file>
 ```
 
-You can now see your imported key with `gpg --homedir ~/.passbolt-renewer/gnupg --list-secret-keys`, here is an example :
+You can now see your imported key with `gpg --homedir ~/.passbolt-toolbox/gnupg --list-secret-keys`, here is an example :
 ```
-~/.passbolt-renewer/gnupg/pubring.gpg
+~/.passbolt-toolbox/gnupg/pubring.gpg
 ------------------------------------------------
 sec   rsa2048 2019-05-28 [SC]
       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -102,13 +98,13 @@ uid           [ unknown] Your Name <your email at xwiki.com>
 ssb   rsa2048 2019-05-28 [E]
 ```
 
-Then, you will need to copy-paste your key fingerprint in the `user.fingerprint` field of `~/passbolt-renewer/config.json`.
+Then, you will need to copy-paste your key fingerprint in the `user.fingerprint` field of `~/.passbolt-toolbox/config.json`.
 
 ### Testing the configuration
 
 Once everything is done, you can validate your configuration by running :
 ```
-passbolt-renewer test
+passbolt-toolbox test
 ```
 
 This will simply test the authentication on the Passbolt server.
