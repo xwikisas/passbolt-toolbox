@@ -18,6 +18,8 @@ class PassboltServer:
         self.uri = self.configManager.server()['uri']
         self.verifyCert = self.configManager.server()['verifyCert']
         self.csrfToken = None
+        self.cachedUserID = None
+        self.cachedGroupIDs = None
 
     def __str__(self):
         return '> Server URI : {}\n> Server fingerprint : {}\n'.format(self.uri, self.fingerprint)
@@ -162,6 +164,59 @@ class PassboltServer:
         self.__updateCSRFToken()
 
         return serverResponse.json()['body']
+
+    """
+    Will return a list of groups for which the current user is in (as a standard user or as a manager.)
+    This list will only be made from group IDs in a table. Returns None if the group list could not be fetched.
+    """
+    def fetchCurrentUserGroups(self):
+        if self.cachedGroupIDs:
+            return self.cachedGroupIDs
+
+        serverResponse = self.session.get(
+            self.__buildURI('/groups.json'),
+            params={'contain[my_group_user]': 1},
+            headers=self.__buildHeaders(),
+            verify=self.verifyCert
+        )
+
+        if serverResponse.status_code == 200:
+            self.cachedGroupIDs = []
+            for element in serverResponse.json()['body']:
+                if 'MyGroupUser' in element.keys():
+                    # We use also this to cache the current user ID if possible
+                    if self.cachedUserID is None:
+                        self.cachedUserID = element['MyGroupUser']['user_id']
+                    self.cachedGroupIDs.append(element['Group']['id'])
+            return self.cachedGroupIDs
+        else:
+            self.logger.error('Failed to get the list of groups in which the current user is in')
+            self.logger.debug(serverResponse.json())
+            return None
+
+    def filterUpdatableResources(self, resources):
+        # We need to get a list of resources in which the user is in, because if we encounter a resource shared with
+        # a group with edit rights, then we'll be super happy to know if our current user is part of this group.
+        # https://github.com/passbolt/passbolt_api/blob/master/src/Model/Entity/Permission.php#L36
+
+        # First, make sure that we know the current user ID and the group IDs the user is in
+        if self.cachedUserID is None or self.cachedGroupIDs is None:
+            self.fetchCurrentUserGroups()
+
+        filteredResources = []
+        for resource in resources:
+            hasUserWriteAccess = False
+            for permissionSet in resource['Permission']:
+                if (((permissionSet['aro'] == 'Group' and permissionSet['aro_foreign_key'] in self.cachedGroupIDs)
+                    or (permissionSet['aro'] == 'User' and permissionSet['aro_foreign_key'] == self.cachedUserID))
+                    # Check for UPDTATE or OWNER rights
+                   and (permissionSet['type'] == 7 or permissionSet['type'] == 15)):
+                    hasUserWriteAccess = True
+
+            if hasUserWriteAccess:
+                filteredResources.append(resource)
+
+        return filteredResources
 
     def updateResource(self, resourceID, description, secretsPayload):
         payload = {'description': description, 'secrets': secretsPayload}

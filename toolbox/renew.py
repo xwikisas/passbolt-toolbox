@@ -21,7 +21,9 @@ class RenewHelper:
     def run(self, args):
         if self.passboltServer.authenticate(self.configManager.user()['fingerprint']):
             resources = self.__fetchResources(args)
-            self.logger.info('Found [{}] resources to renew'.format(len(resources)))
+            self.logger.info('Found [{}] resources available'.format(len(resources)))
+            resources = self.passboltServer.filterUpdatableResources(resources)
+            self.logger.info('Found [{}] resources that can be renewed'.format(len(resources)))
 
             if args.limit != 0 and len(resources) >= args.limit:
                 self.logger.info('Limiting renewal to the first [{}] resources'.format(args.limit))
