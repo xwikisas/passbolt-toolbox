@@ -80,18 +80,18 @@ class RenewHelper:
                             'data': self.keyring.encrypt(newPassword, userKeyID).data.decode('utf-8')
                         })
 
-                    if args.dryRun:
+                    if not args.dryRun:
                         if self.passboltServer.updateResource(resourceID,
                                                               resource.generateDescription(), secretsPayload):
                             self.logger.info('Resource "{}" renewed and updated'.format(resourceName))
                         else:
                             self.logger.error('Failed to renew resource "{}" [{}], rolling back ...'
                                               .format(resourceName, resourceID))
-                            if connector.rollbackPassword():
+                            if connector.rollbackPasswordUpdate():
                                 self.logger.info('Password successfully rolled back')
                             else:
                                 self.logger.error('''*** Heads up ! *** Password has been updated on the service,
-                                but could not be saved on Passbolt. Password rollback also failed.''')
+but could not be saved on Passbolt. Password rollback also failed.''')
                                 self.logger.error(secretsPayload)
                     else:
                         self.logger.info('Skipping the update of "{}" on Passbolt as dry-run is activated'
@@ -131,7 +131,7 @@ class RenewHelper:
 
     def __createConnector(self, resource, newPassword):
         # Decrypt the old password
-        oldPassword = self.keyring.decrypt(resource['Secret'][0]['data'])
+        oldPassword = str(self.keyring.decrypt(resource['Secret'][0]['data']))
         return XWikiConnector(resource, oldPassword, newPassword)
 
     def __maybeImportKey(self, armoredKey, keyID, firstName, lastName):

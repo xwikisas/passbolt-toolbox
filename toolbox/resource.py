@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import re
 
 """
 Wraps a resource JSON as returned by the Passbolt server to add specific methods.
@@ -10,9 +11,9 @@ and that are thus not directly accessible.
 
 class Resource:
     logger = logging.getLogger('Resource')
-    lastUpdatePropertyPattern = r'^>>> Last password update : (\d{2}\/\d{2}\/\d{4})$'
-    updateCountPropertyPattern = r'^>>> Update count : (\d*)$'
-    connectorTypePropertyPattern = r'^>>> Connector : (.*)$'
+    lastUpdatePropertyPattern = re.compile('^>>> Last password update : (\d{2}\/\d{2}\/\d{4})$')
+    updateCountPropertyPattern = re.compile('^>>> Update count : (\d*)$')
+    connectorTypePropertyPattern = re.compile('^>>> Connector : (.*)$')
     dateFormat = "%d/%m/%Y"
 
     def __init__(self, resourceJSON):
@@ -30,6 +31,7 @@ class Resource:
 
     def __parseResourceDescription(self):
         lines = self.resourceJSON['Resource']['description'].split('\n')
+        self.logger.debug('Found description lines : [{}]'.format(lines))
 
         self.cleanDescription = []
         for line in lines:

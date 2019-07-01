@@ -71,7 +71,7 @@ class XWikiConnector(Connector):
             # Store the root URL in case we need it in #rollbackPasswordUpdate()
             self.restRootURL = baseURL + restRootPath
 
-            return self.__sendPasswordUpdateRequest(self.oldPassword, self.newPasword)
+            return self.__sendPasswordUpdateRequest(self.oldPassword, self.newPassword)
         except RequestException as e:
             self.logger.error('Communication with the XWiki server failed : [{}]'.format(e))
             return False

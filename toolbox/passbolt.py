@@ -176,6 +176,8 @@ class PassboltServer:
 
         if serverResponse.status_code == 200:
             self.logger.info('Successfully updated resource [{}]'.format(resourceID))
+            return True
         else:
             self.logger.error('Failed to update the password [{}] on Passbolt !'.format(resourceID))
             self.logger.debug(vars(serverResponse))
+            return False

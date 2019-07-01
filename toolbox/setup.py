@@ -25,8 +25,7 @@ class SetupHelper:
     @return true if we can go on with the configuration
     """
     def __checkExistingServerConfiguration(self):
-        if (self.passboltServer.fingerprint
-           or self.passboltServer.uri):
+        if (self.passboltServer.fingerprint or self.passboltServer.uri):
             return ask_question(
                 'A server configuration for [{}] is already present, continue ? [yes / NO] '
                 .format(self.passboltServer.uri),
