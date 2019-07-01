@@ -18,7 +18,7 @@ args = parse_args()
 init_logger(args.verbose)
 logger = logging.getLogger('Main')
 
-logger.debug('Arguments : {}'.format(args))
+logger.debug('Arguments : [{}]'.format(args))
 
 configManager = ConfigManager()
 keyring = GPG(gnupghome=Environment.keyringDir)
