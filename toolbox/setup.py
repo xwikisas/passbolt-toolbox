@@ -25,10 +25,10 @@ class SetupHelper:
     @return true if we can go on with the configuration
     """
     def __checkExistingServerConfiguration(self):
-        if (self.passboltServer.fingerprint or self.passboltServer.uri):
+        if (self.passboltServer.fingerprint or self.passboltServer.api.uri):
             return ask_question(
                 'A server configuration for [{}] is already present, continue ? [yes / NO] '
-                .format(self.passboltServer.uri),
+                .format(self.passboltServer.api.uri),
                 False
             )
         else:
@@ -49,19 +49,15 @@ class SetupHelper:
         else:
             return True
 
-    def __getServerURI(self):
-        print('Server URI : ')
-        self.passboltServer.setURI()
-
     def setupServer(self):
         self.__displaySetupBanner('Server setup')
 
         if self.__checkExistingServerConfiguration():
             # Get the server uri
             sys.stdout.write('Server URI : ')
-            self.passboltServer.setURI(input())
+            self.passboltServer.api.setURI(input())
 
-            self.passboltServer.setVerifyCert(
+            self.passboltServer.api.setVerifyCert(
                 not ask_question(
                     'Trust the server certficate without verification ? [yes / NO] ', False
                 )

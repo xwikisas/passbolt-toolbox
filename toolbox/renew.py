@@ -19,7 +19,8 @@ class RenewHelper:
         self.keysInKeyring = [x['keyid'][-8:] for x in self.keyring.list_keys()]
 
     def run(self, args):
-        if self.passboltServer.authenticate(self.configManager.user()['fingerprint']):
+        # First try to authenticate
+        if self.passboltServer.api.authenticate(self.configManager.user()['fingerprint']):
             resources = self.__fetchResources(args)
             self.logger.info('Found [{}] resources available'.format(len(resources)))
             resources = self.passboltServer.filterUpdatableResources(resources)
@@ -57,7 +58,7 @@ class RenewHelper:
                     # Resolve users in the given groups
                     # TODO : Add group cache
                     for resourceGroupID in resourceGroupIDs:
-                        group = self.passboltServer.fetchGroupByID(resourceGroupID)
+                        group = self.passboltServer.api.groups.get(resourceGroupID)
                         self.__maybeImportGroupUsers(group['GroupUser'])
                         for groupUser in group['GroupUser']:
                             resourceUsersMap[groupUser['User']['id']] = groupUser['User']['Gpgkey']['key_id']
@@ -66,7 +67,7 @@ class RenewHelper:
                     for resourceUserID in resourceUserIDs:
                         # The user might also be in a group, in that case, it's useless to add it twice
                         if resourceUserID not in resourceUsersMap:
-                            user = self.passboltServer.fetchUserByID(resourceUserID)
+                            user = self.passboltServer.api.users.get(resourceUserID)
                             self.__maybeImportUser(user)
                             resourceUsersMap[resourceUserID] = user['Gpgkey']['key_id']
 

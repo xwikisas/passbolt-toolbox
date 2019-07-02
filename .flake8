@@ -2,4 +2,4 @@
 max-line-length = 120
 statistics = True
 exclude = venv,config.py
-ignore = W503,W605
+ignore = E402,W503,W605
