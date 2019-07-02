@@ -142,7 +142,7 @@ class PassboltServer:
         self.logger.debug('Will update resource with payload : [{}]'.format(payload))
 
         try:
-            self.api.resources.put(resourceID, payload=json.dumps(payload))
+            self.api.resources.put(resourceID, data=json.dumps(payload))
 
             self.logger.info('Successfully updated resource [{}]'.format(resourceID))
             return True

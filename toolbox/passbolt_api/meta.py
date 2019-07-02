@@ -101,7 +101,7 @@ class PassboltAPI:
             uri,
             params=params,
             data=data,
-            headers=self._buildHeaders(),
+            headers=self.__buildHeaders(),
             verify=self.verifyCert
         )
         self.__updateCSRFToken()
@@ -112,7 +112,7 @@ class PassboltAPI:
             uri,
             params=params,
             data=data,
-            headers=self._buildHeaders(),
+            headers=self.__buildHeaders(),
             verify=self.verifyCert
         )
         self.__updateCSRFToken()
@@ -123,7 +123,7 @@ class PassboltAPI:
             uri,
             params=params,
             data=data,
-            headers=self._buildHeaders(),
+            headers=self.__buildHeaders(),
             verify=self.verifyCert
         )
         self.__updateCSRFToken()
