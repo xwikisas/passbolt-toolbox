@@ -21,8 +21,6 @@ from passbolt_api.users import PassboltUsersAPI
 class PassboltAPI:
     def __init__(self, apiContext={}):
         self.apiContext = apiContext
-        self.serverFingerprint = self.apiContext['serverFingerprint']
-        self.keyring = self.apiContext['keyring']
         self.uri = self.apiContext['uri']
         self.verifyCert = self.apiContext['verifyCert']
 
@@ -48,15 +46,15 @@ class PassboltAPI:
     Perform the GPGAuth authentication against the server. Returns True if the authentication is successful,
     False otherwise.
     """
-    def authenticate(self, userFingerprint):
+    def authenticate(self, keyring, userFingerprint, serverFingerprint):
         self.session = GPGAuthSessionWrapper(
-            gpg=self.keyring,
+            gpg=keyring,
             server_url=self.uri,
             user_fingerprint=userFingerprint,
             verify=self.verifyCert
         )
 
-        assert self.session.server_fingerprint == self.serverFingerprint
+        assert self.session.server_fingerprint == serverFingerprint
         self.session.authenticate()
 
         return self.session.is_authenticated_with_token

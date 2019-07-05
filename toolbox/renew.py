@@ -20,7 +20,9 @@ class RenewHelper:
 
     def run(self, args):
         # First try to authenticate
-        if self.passboltServer.api.authenticate(self.configManager.user()['fingerprint']):
+        if self.passboltServer.api.authenticate(self.keyring,
+                                                self.configManager.user()['fingerprint'],
+                                                self.configManager.server()['fingerprint']):
             resources = self.__fetchResources(args)
             self.logger.info('Found [{}] resources available'.format(len(resources)))
             resources = self.passboltServer.filterUpdatableResources(resources)
