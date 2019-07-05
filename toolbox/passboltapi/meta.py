@@ -12,10 +12,10 @@ class PassboltAPIError(AssertionError):
     pass
 
 
-from passbolt_api.auth import PassboltAuthAPI
-from passbolt_api.groups import PassboltGroupsAPI
-from passbolt_api.resources import PassboltResourcesAPI
-from passbolt_api.users import PassboltUsersAPI
+from passboltapi.auth import PassboltAuthAPI
+from passboltapi.groups import PassboltGroupsAPI
+from passboltapi.resources import PassboltResourcesAPI
+from passboltapi.users import PassboltUsersAPI
 
 
 class PassboltAPI:

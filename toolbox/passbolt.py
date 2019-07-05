@@ -1,8 +1,8 @@
 import json
 import logging
 
-from passbolt_api.meta import PassboltAPI
-from passbolt_api.meta import PassboltAPIError
+from passboltapi.meta import PassboltAPI
+from passboltapi.meta import PassboltAPIError
 
 
 # Defines a Passbolt instance with its fingerprint, its url, ...
@@ -116,7 +116,7 @@ class PassboltServer:
     def filterUpdatableResources(self, resources):
         # We need to get a list of resources in which the user is in, because if we encounter a resource shared with
         # a group with edit rights, then we'll be super happy to know if our current user is part of this group.
-        # https://github.com/passbolt/passbolt_api/blob/master/src/Model/Entity/Permission.php#L36
+        # https://github.com/passbolt/passboltapi/blob/master/src/Model/Entity/Permission.php#L36
 
         # First, make sure that we know the current user ID and the group IDs the user is in
         if self.cachedUserID is None or self.cachedGroupIDs is None:

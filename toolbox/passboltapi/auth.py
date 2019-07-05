@@ -1,4 +1,4 @@
-from passbolt_api.meta import PassboltAPIEndpoint
+from passboltapi.meta import PassboltAPIEndpoint
 
 
 class PassboltAuthAPI(PassboltAPIEndpoint):
