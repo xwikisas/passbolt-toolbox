@@ -30,7 +30,10 @@ class Resource:
         return self.resourceJSON[key]
 
     def __parseResourceDescription(self):
-        lines = self.resourceJSON['Resource']['description'].split('\n')
+        self.logger.debug('Description : [{}]'.format(self.resourceJSON['Resource']['description']))
+        lines = (self.resourceJSON['Resource']['description'].split('\n')
+                 if self.resourceJSON['Resource']['description']
+                 else [])
         self.logger.debug('Found description lines : [{}]'.format(lines))
 
         self.cleanDescription = []

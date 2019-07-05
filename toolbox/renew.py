@@ -24,8 +24,14 @@ class RenewHelper:
                                                 self.configManager.user()['fingerprint'],
                                                 self.configManager.server()['fingerprint']):
             resources = self.__fetchResources(args)
-            self.logger.info('Found [{}] resources available'.format(len(resources)))
-            resources = self.passboltServer.filterUpdatableResources(resources)
+
+            # In the case where we are renewing resources that belong to a group, we will need
+            # to filter which resources are shared with edit rights, and which resources are not shared with
+            # this right
+            if not args.personal:
+                self.logger.info('Found [{}] resources available'.format(len(resources)))
+                resources = self.passboltServer.filterUpdatableResources(resources)
+
             self.logger.info('Found [{}] resources that can be renewed'.format(len(resources)))
 
             if args.limit != 0 and len(resources) >= args.limit:
@@ -111,25 +117,40 @@ but could not be saved on Passbolt. Password rollback also failed.''')
     wrapped in a Resource() to add specific methods for updating the resource metadata.
     """
     def __fetchResources(self, args):
-        self.logger.debug('Resolving group members')
-        groups = self.passboltServer.resolveGroupsByName(args.group)
+        if args.personal:
+            rawResources = self.passboltServer.api.resources.get(
+                params={'contain[permissions.group]': 1,
+                        'contain[permission.user.profile]': 1,
+                        'contain[secret]': 1,
+                        'filter[is-owned-by-me]': 1}
+            )
+        else:
+            self.logger.debug('Resolving groups members')
+            groups = self.passboltServer.resolveGroupsByName(args.group)
 
-        # Get every password corresponding to the groups
-        groupsIDs = [x['Group']['id'] for x in groups]
-        self.logger.debug('Groups IDs : [{}]'.format(groupsIDs))
-        rawResources = self.passboltServer.fetchResourcesForGroups(groupsIDs)
+            # Get every password corresponding to the groups
+            groupsIDs = [x['Group']['id'] for x in groups]
+            self.logger.debug('Groups IDs : [{}]'.format(groupsIDs))
+            rawResources = self.passboltServer.fetchResourcesForGroups(groupsIDs)
 
-        # Remove every resource having a date not valid
+        # Make sure that we wrap the resources in our super Resource object
+        # also remove every resource having a date not valid
+        # if we renew personal passwords, we also exclude resources shared with more than 1 person (the user itself)
         filteredResources = []
         for rawResource in rawResources:
             resource = Resource(rawResource)
 
+            hasValidPerms = (True if (not args.personal or len(resource['Permission']) == 1) else False)
+            hasValidDate = False
             if (args.before or args.after) and resource.lastUpdateDate is not None:
                 if ((not args.before or resource.lastUpdateDate <= args.before)
                    and (not args.after or resource.lastUpdateDate >= args.after)):
-                    filteredResources.append(resource)
+                    hasValidDate = True
             else:
                 # Assume that the password needs to be initialized
+                hasValidDate = True
+
+            if hasValidDate and hasValidPerms:
                 filteredResources.append(resource)
 
         return filteredResources

@@ -56,9 +56,13 @@ def parse_args():
         'renew',
         help='renew a set of passwords'
     )
-    renewParser.add_argument('-g', '--group',
-                             nargs=1,
-                             help='group in which the password should be included')
+    renewScope = renewParser.add_mutually_exclusive_group()
+    renewScope.add_argument('-p', '--personal',
+                            action='store_true',
+                            help='only renew personal passwords that are not shared with anybody')
+    renewScope.add_argument('-g', '--group',
+                            nargs=1,
+                            help='group in which the password should be included')
     renewParser.add_argument('-b', '--before',
                              type=valid_date,
                              help='date before which the password should have been updated')
