@@ -1,0 +1,3 @@
+[submodule "toolbox/passboltapi"]
+	path = toolbox/passboltapi
+	url = https://github.com/xwikisas/passbolt-api.git
