@@ -6,3 +6,4 @@ python-gnupg==0.4.4
 requests==2.22.0
 requests-gpgauthlib==0.1.2
 urllib3==1.25.3
+passbolt-api==0.0.4
