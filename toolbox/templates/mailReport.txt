@@ -1,0 +1,46 @@
+Hi,
+
+Below is a report of a password renewing operation that occurred on {{ context.date }}.
+
+Found items : {{ stats.foundItems }}
+Resources scheduled for update : {{ stats.renewableItems }}
+Successfully updated resources : {{ stats['items']['success']|length }}
+
+Successfully updated resources :
+{%- if stats['items']['success']|length > 0 -%}
+{% for resource in stats['items']['success'] %}
+* {{ resource['resource']['Resource']['name'] }} ({{ resource['resource']['Resource']['uri'] }})
+{%- endfor -%}
+{%- else %}
+N/A
+{%- endif %}
+
+Resources that failed to be updated :
+{%- if stats['items']['failures']|length > 0 -%}
+{% for resource in stats['items']['failures'] %}
+* {{ resource['resource']['Resource']['name'] }} ({{ resource['resource']['Resource']['uri'] }})
+{%- endfor -%}
+{%- else %}
+N/A
+{%- endif %}
+
+Resources that were rollbacked (update was successfuly, but the password update in Passbolt wasn't) :
+{%- if stats['items']['rollback']|length > 0 -%}
+{% for resource in stats['items']['rollback'] %}
+* {{ resource['resource']['Resource']['name'] }} ({{ resource['resource']['Resource']['uri'] }})
+{%- endfor -%}
+{%- else %}
+N/A
+{%- endif %}
+
+Resources left in an invalid state :
+{%- if stats['items']['errors']|length > 0 -%}
+{% for resource in stats['items']['errors'] %}
+* {{ resource['resource']['Resource']['name'] }} ({{ resource['resource']['Resource']['uri'] }})
+{{ resource.payload }}
+{%- endfor -%}
+{%- else %}
+N/A
+{%- endif %}
+
+Have a nice day !

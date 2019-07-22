@@ -57,7 +57,7 @@ class Resource:
                 self.cleanDescription.append(line)
 
         self.logger.debug('Last update date : [{}]'.format(self.lastUpdateDate))
-        self.logger.debug('$Update count : [{}]'.format(self.updateCount))
+        self.logger.debug('Update count : [{}]'.format(self.updateCount))
         self.logger.debug('Connector type : [{}]'.format(self.connectorType))
         self.logger.debug('Resulting description : [{}]'.format(self.cleanDescription))
 

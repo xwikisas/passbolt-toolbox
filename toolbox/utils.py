@@ -73,6 +73,10 @@ def parse_args():
                              type=int,
                              default=0,
                              help='only update the n first passwords')
+    renewParser.add_argument('-mr', '--mail-report',
+                             dest='mailReportRecipient',
+                             metavar='RECIPIENT',
+                             help='send a report of the renewal by email to the given adresses')
     renewParser.add_argument('--dry-run',
                              dest='dryRun',
                              action='store_true',

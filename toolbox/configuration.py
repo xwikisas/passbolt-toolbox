@@ -67,8 +67,11 @@ class ConfigManager:
             )
             with open(Environment.configFilePath, 'w+') as emptyFile:
                 # The default minimal configuration
-                emptyFile.write('''{"server": {"fingerprint": "", "uri": "", "verifyCert": true},
-                "user": {"fingerprint": ""}}''')
+                emptyFile.write('''{
+                "server": {"fingerprint": "", "uri": "", "verifyCert": true},
+                "user": {"fingerprint": ""},
+                "parameters": {"mail": {"server": "", "user": "", "password": "", "sender": ""}},
+                "connectors": {}}''')
 
         with open(Environment.configFilePath, 'r+') as configFile:
             self.config = json.load(configFile)
@@ -83,6 +86,12 @@ class ConfigManager:
 
     def user(self):
         return self.config['user']
+
+    def parameters(self):
+        return self.config['parameters']
+
+    def connectors(self):
+        return self.config['connectors']
 
     def persist(self):
         self.__saveConfig()

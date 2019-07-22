@@ -1,9 +1,11 @@
 certifi==2019.6.16
 chardet==3.0.4
 idna==2.8
+Jinja2==2.10.1
+MarkupSafe==1.1.1
+passbolt-api==0.0.4
 pkg-resources==0.0.0
 python-gnupg==0.4.4
 requests==2.22.0
 requests-gpgauthlib==0.1.2
 urllib3==1.25.3
-passbolt-api==0.0.4
