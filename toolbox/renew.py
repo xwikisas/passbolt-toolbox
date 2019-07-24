@@ -32,10 +32,10 @@ class RenewHelper:
                 'foundItems': 0,
                 'renewableItems': 0,
                 'items': {
-                    'success': [],  # Successfully renewed, no problem
-                    'failures': [], # The service did not accept the renewal
-                    'rollback': [], # The password was renewed but not committed to passbolt, so it has been rollbacked
-                    'errors': []    # Everything failed, including the rollback of the password
+                    'success': [],   # Successfully renewed, no problem
+                    'failures': [],  # The service did not accept the renewal
+                    'rollback': [],  # The password was renewed but not committed to passbolt, so it has been rollbacked
+                    'errors': []     # Everything failed, including the rollback of the password
                 }
             }
 

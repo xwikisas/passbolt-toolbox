@@ -1,5 +1,4 @@
 import logging
-import re
 import smtplib
 
 from datetime import datetime
@@ -17,9 +16,12 @@ class ReportManager:
         if self.args.mailReportRecipient:
             MailReporter(self.config, self.args, renewalStats).sendReport()
 
+
 """
 Simple reporting interface.
 """
+
+
 class Reporter:
     logger = logging.getLogger('Reporter')
 
