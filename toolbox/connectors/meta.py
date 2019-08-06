@@ -6,11 +6,13 @@ of a specific service using the information they get at initialization.
 
 class Connector:
     """
+    @param configManager : the configuration manager
     @param resource : information about the resource to update (server url, description, username, ...)
     @param oldPassword : the old resource password
     @param newPasword : the new resource password
     """
-    def __init__(self, resource, oldPassword, newPassword):
+    def __init__(self, configManager, resource, oldPassword, newPassword):
+        self.configManager = configManager
         self.resource = resource
         self.resourceURI = resource['Resource']['uri']
         self.resourceUsername = resource['Resource']['username']
