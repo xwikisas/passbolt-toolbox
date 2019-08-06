@@ -6,6 +6,7 @@ from gnupg import GPG
 
 from configuration import ConfigManager
 from configuration import Environment
+from keyring import KeyringManager
 from passbolt import PassboltServer
 from setup import SetupHelper
 from renew import RenewHelper
@@ -22,6 +23,7 @@ logger.debug('Arguments : [{}]'.format(args))
 
 configManager = ConfigManager()
 keyring = GPG(gnupghome=Environment.keyringDir)
+keyringManager = KeyringManager(keyring)
 passboltServer = PassboltServer(configManager, keyring)
 
 if args.action == 'setup':
@@ -32,4 +34,4 @@ if args.action == 'setup':
 elif args.action == 'test':
     test_configuration(logger, configManager, keyring)
 elif args.action == 'renew':
-    RenewHelper(configManager, keyring, passboltServer).run(args)
+    RenewHelper(configManager, keyringManager, passboltServer).run(args)
