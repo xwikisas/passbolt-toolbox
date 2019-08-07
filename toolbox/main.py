@@ -8,6 +8,7 @@ from configuration import ConfigManager
 from configuration import Environment
 from keyring import KeyringManager
 from passbolt import PassboltServer
+from importer import ImportHelper
 from setup import SetupHelper
 from renew import RenewHelper
 
@@ -35,3 +36,5 @@ elif args.action == 'test':
     test_configuration(logger, configManager, keyring)
 elif args.action == 'renew':
     RenewHelper(configManager, keyringManager, passboltServer).run(args)
+elif args.action == 'import':
+    ImportHelper(configManager, keyringManager, passboltServer).run(args)

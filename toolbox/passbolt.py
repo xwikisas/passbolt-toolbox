@@ -150,3 +150,17 @@ class PassboltServer:
             self.logger.error('Failed to update the password [{}] on Passbolt !'.format(resourceID))
             self.logger.debug(e)
             return False
+
+    def createResource(self, resource, resourceUsersMap):
+        payload = {'description': description, 'secrets': secretsPayload}
+        self.logger.debug('Will update resource with payload : [{}]'.format(payload))
+
+        try:
+            self.api.resources.put(resourceID, data=json.dumps(payload))
+
+            self.logger.info('Successfully updated resource [{}]'.format(resourceID))
+            return True
+        except PassboltAPIError as e:
+            self.logger.error('Failed to update the password [{}] on Passbolt !'.format(resourceID))
+            self.logger.debug(e)
+            return False

@@ -82,8 +82,42 @@ def parse_args():
                              action='store_true',
                              help='run through the renewal process without actually updating resources')
 
+    importParser = subParsers.add_parser(
+        'import',
+        help='import a CSV file on the Passbolt Server'
+    )
+
+    importParser.add_argument(
+        '--auto-create-groups',
+        dest='autoCreateGroups',
+        help='if some groups are mentionned in the CSV but are not present, create them automatically'
+    )
+
+    importParser.add_argument(
+        '--default-group-admins',
+        type=valid_id_list,
+        default=[],
+        dest='defaultGroupAdmins',
+        help='a comma-separated list of the user IDs to add as admin when creating the groups'
+    )
+
+    importParser.add_argument(
+        '--default-group-members',
+        type=valid_id_list,
+        default=[],
+        dest='defaultGroupMembers',
+        help='a comma-separated list of the user IDs to add as member when creating the groups'
+    )
+
+    importParser.add_argument(
+        'file',
+        help='a path to the CSV file that needs to be imported'
+    )
+
     return rootParser.parse_args()
 
+def valid_id_list(string):
+    return string.split(',')
 
 def valid_date(string):
     try:

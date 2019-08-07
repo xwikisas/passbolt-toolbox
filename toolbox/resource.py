@@ -20,7 +20,7 @@ class Resource:
         self.resourceJSON = resourceJSON
         self.lastUpdateDate = None
         self.updateCount = 0
-        self.connectorType = 'XWiki'
+        self.connectorType = None
         self.__parseResourceDescription()
 
     """
