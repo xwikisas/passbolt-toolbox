@@ -24,12 +24,12 @@ class ImportHelper:
                                                 self.configManager.user()['fingerprint'],
                                                 self.configManager.server()['fingerprint']):
             # Parse the CSV
-            resources = []
+            csvResources = []
             with open(args.file) as csvFile:
                 spamReader = csv.reader(csvFile, delimiter=',')
                 for row in spamReader:
                     self.logger.debug('Registering entry {}'.format(row))
-                    resources.append({
+                    csvResources.append({
                         'name': row[0],
                         'username': row[1],
                         'password': row[2],
@@ -41,6 +41,21 @@ class ImportHelper:
             # Get a list of existing groups
             self.groups = self.passboltServer.api.groups.get()
             self.__generateGroupNames()
+
+            if args.skipIfExists:
+                # Get a list of existing resources
+                existingResources = self.passboltServer.api.resources.get()
+                existingResourcesNames = [r['Resource']['Name'] for r in existingResources]
+
+                resources = []
+                for resource in csvResources:
+                    if resource['name'] not in existingResourcesNames:
+                        resources.append(resource)
+                    else:
+                        self.logger.info('Skipping resource [{}] as it is already on the server'
+                                         .format(resource['name'])))
+            else:
+                resources = csvResources
 
             # For each line, we have the ressource, a name that can be computed, a password, a username, an url
             # and a description

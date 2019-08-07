@@ -95,6 +95,13 @@ def parse_args():
     )
 
     importParser.add_argument(
+        '--skip-if-exists',
+        dest='skipIfExists',
+        action='store_true',
+        help='skip if a password with the same name accessible by the user already exists on the server'
+    )
+
+    importParser.add_argument(
         '--default-group-admins',
         type=valid_id_list,
         default=[],
