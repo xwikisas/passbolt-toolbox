@@ -35,12 +35,16 @@ class ImportHelper:
                         'password': row[2],
                         'uri': row[3],
                         'description': row[4],
-                        'group': row[5]
+                        'group': row[5],
+                        'page': row[6],
+                        'rawtext': row[7]
                     })
 
             # Get a list of existing groups
             self.groups = self.passboltServer.api.groups.get()
             self.__generateGroupNames()
+
+            resultCSV = []
 
             if args.skipIfExists:
                 # Get a list of existing resources
@@ -53,12 +57,12 @@ class ImportHelper:
                         resources.append(resource)
                     else:
                         self.logger.info('Skipping resource [{}] as it is already on the server'
-                                         .format(resource['name'])))
+                                         .format(resource['name']))
             else:
                 resources = csvResources
 
-            # For each line, we have the ressource, a name that can be computed, a password, a username, an url
-            # and a description
+            # Debugging, only take the first 5 passwords
+            resources = resources[:5]
 
             for resource in resources:
                 # Check if the group of the resource exists or not
@@ -105,6 +109,11 @@ class ImportHelper:
                         if not self.__shareResource(resourceID, groupID, 15, secretsPayload):
                             self.logger.error('Failed to share resource [{}] ({}) with group [{}] ({})'
                                               .format(resource['name'], resourceID, resource['group'], groupID))
+                        else:
+                            resultCSV.append([resource['page'],
+                                              resource['rawtext'],
+                                              '{}/app/passwords/view/{}'.format(self.configManager.server()['uri'],
+                                                                                resourceID)])
                     else:
                         self.logger.error('Error while retrieving the group to share the resource with.')
                 elif not args.autoCreateGroups:
@@ -114,7 +123,12 @@ class ImportHelper:
                     self.logger.error('Error while creating the group [{}]. Skipping resource [{}].'
                                       .format(resource['group'], resource['name']))
 
-                return
+            if len(resultCSV) > 0:
+                self.logger.info('Saving result CSV file as [{}]'.format(args.outputFile))
+                with open(args.outputFile, 'w+') as f:
+                    spamWriter = csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+                    for row in resultCSV:
+                        spamWriter.writerow(row)
         else:
             self.logger.error('Failed to authenticate to the Passbolt server.')
 

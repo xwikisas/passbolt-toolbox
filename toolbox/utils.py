@@ -122,6 +122,11 @@ def parse_args():
         help='a path to the CSV file that needs to be imported'
     )
 
+    importParser.add_argument(
+        'outputFile',
+        help='the name of the output CSV file containing the links to the created resources'
+    )
+
     return rootParser.parse_args()
 
 def valid_id_list(string):
