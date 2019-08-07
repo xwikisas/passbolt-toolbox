@@ -90,6 +90,7 @@ def parse_args():
     importParser.add_argument(
         '--auto-create-groups',
         dest='autoCreateGroups',
+        action='store_true',
         help='if some groups are mentionned in the CSV but are not present, create them automatically'
     )
 

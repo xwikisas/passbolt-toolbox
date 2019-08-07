@@ -47,11 +47,11 @@ class ImportHelper:
 
             for resource in resources:
                 # Check if the group of the resource exists or not
-                if resource['group'] and resource['group'] not in self.groupNames:
+                if resource['group'] and resource['group'] not in self.groupNames and args.autoCreateGroups:
                     # We need to create a group
                     groupExists = self.__createGroup(resource['group'], args)
                 else:
-                    groupExists = True
+                    groupExists = args.autoCreateGroups
 
                 if groupExists:
                     resourceID = self.__createResource(resource)
@@ -92,6 +92,9 @@ class ImportHelper:
                                               .format(resource['name'], resourceID, resource['group'], groupID))
                     else:
                         self.logger.error('Error while retrieving the group to share the resource with.')
+                elif not args.autoCreateGroups:
+                    self.logger.warning('Skipping resource [{}] as group [{}] is not already present on the server.'
+                                        .format(resource['name'], resource['group']))
                 else:
                     self.logger.error('Error while creating the group [{}]. Skipping resource [{}].'
                                       .format(resource['group'], resource['name']))
