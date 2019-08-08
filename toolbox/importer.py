@@ -49,7 +49,7 @@ class ImportHelper:
             if args.skipIfExists:
                 # Get a list of existing resources
                 existingResources = self.passboltServer.api.resources.get()
-                existingResourcesNames = [r['Resource']['Name'] for r in existingResources]
+                existingResourcesNames = [r['Resource']['name'] for r in existingResources]
 
                 resources = []
                 for resource in csvResources:
@@ -61,8 +61,10 @@ class ImportHelper:
             else:
                 resources = csvResources
 
+            # Filter username and passwords being null
+            resources = list(filter(lambda e: e['username'] != 'null' or e['password'] != 'null', resources))
             # Debugging, only take the first 5 passwords
-            resources = resources[:5]
+            #resources = resources[:5]
 
             for resource in resources:
                 # Check if the group of the resource exists or not
@@ -172,7 +174,6 @@ class ImportHelper:
 
         try:
             result = self.passboltServer.api.resources.post(data=json.dumps(payload))
-            self.logger.info(result)
             return result['id']
         except PassboltAPIError as e:
             self.logger.debug(e)
