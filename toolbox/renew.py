@@ -50,88 +50,101 @@ class RenewHelper:
 
             renewalStats['renewableItems'] = len(resources)
 
-            for resource in resources:
-                resourceID = resource['Resource']['id']
-                resourceName = resource['Resource']['name']
-                self.logger.info('Renewing resource "{}"'.format(resourceName, resourceID))
-
-                # Generate the new password
-                newPassword = token_urlsafe(32)
-
-                connector = self.__createConnector(resource, newPassword)
-                if args.dryRun or connector.updatePassword():
-                    self.logger.debug('Renew success ! Updating resource on Passbolt ...')
-                    resource.markAsUpdated()
-
-                    # Get a map of users having access to the resource + their pubkey
-                    resourceUsersMap = {}
-
-                    # List the groups to which this resource belongs
-                    resourceUserIDs = []
-                    resourceGroupIDs = []
-                    for permissionSet in resource['Permission']:
-                        if permissionSet['aro'] == 'Group':
-                            resourceGroupIDs.append(permissionSet['aro_foreign_key'])
-                        elif permissionSet['aro'] == 'User':
-                            resourceUserIDs.append(permissionSet['aro_foreign_key'])
-
-                    # Resolve users in the given groups
-                    # TODO : Add group cache
-                    for resourceGroupID in resourceGroupIDs:
-                        group = self.passboltServer.api.groups.get(resourceGroupID)
-                        self.keyringManager.maybeImportGroupUsers(group['GroupUser'])
-                        for groupUser in group['GroupUser']:
-                            resourceUsersMap[groupUser['User']['id']] = groupUser['User']['Gpgkey']['key_id']
-
-                    # TODO : Add user cache
-                    for resourceUserID in resourceUserIDs:
-                        # The user might also be in a group, in that case, it's useless to add it twice
-                        if resourceUserID not in resourceUsersMap:
-                            user = self.passboltServer.api.users.get(resourceUserID)
-                            self.keyringManager.maybeImportUser(user)
-                            resourceUsersMap[resourceUserID] = user['Gpgkey']['key_id']
-
-                    # We now have a map of user IDs with their key ID, that way we can proceed to
-                    # the encryption of the new password.
-                    secretsPayload = []
-                    for userID in resourceUsersMap.keys():
-                        # Encrypt the password, create the secrets payload
-                        userKeyID = resourceUsersMap[userID]
-                        self.logger.debug('Encrypting password for user [{}] ({})'.format(userID, userKeyID))
-                        secretsPayload.append({
-                            'user_id': userID,
-                            'data': self.keyringManager.keyring.encrypt(newPassword, userKeyID).data.decode('utf-8')
-                        })
-
-                    if not args.dryRun:
-                        if self.passboltServer.updateResource(resourceID,
-                                                              resource.generateDescription(), secretsPayload):
-                            self.logger.info('Resource "{}" renewed and updated'.format(resourceName))
-                            renewalStats['items']['success'].append({'resource': resource})
-                        else:
-                            self.logger.error('Failed to renew resource "{}" [{}], rolling back ...'
-                                              .format(resourceName, resourceID))
-                            if connector.rollbackPasswordUpdate():
-                                self.logger.info('Password successfully rolled back')
-                                renewalStats['items']['rollback'].append({'resource': resource})
-                            else:
-                                self.logger.error('''*** Heads up ! *** Password has been updated on the service,
-but could not be saved on Passbolt. Password rollback also failed.''')
-                                self.logger.error(secretsPayload)
-                                renewalStats['items']['errors'].append({'resource': resource,
-                                                                        'payload': secretsPayload})
-                    else:
-                        self.logger.info('Skipping the update of "{}" on Passbolt as dry-run is activated'
-                                         .format(resourceName))
-                        renewalStats['items']['success'].append({'resource': resource})
-                else:
-                    self.logger.error('Failed to renew resource "{}" [{}]'.format(resourceName, resourceID))
-                    renewalStats['items']['failures'].append({'resource': resource})
+            try:
+                for resource in resources:
+                    self.__renewResource(resource, args, renewalStats)
+            except KeyboardInterrupt:
+                self.logger.info('Interrupted, sending report and exiting ...')
 
             # At the end of the process, show and / or send a report
             reportManager.sendReports(renewalStats)
         else:
             self.logger.error('Failed to authenticate to the Passbolt server.')
+
+    def __renewResource(self, resource, args, renewalStats):
+        resourceID = resource['Resource']['id']
+        resourceName = resource['Resource']['name']
+        self.logger.info('Renewing resource "{}"'.format(resourceName, resourceID))
+
+        # Generate the new password
+        newPassword = token_urlsafe(32)
+
+        connector = self.__createConnector(resource, newPassword)
+        if connector:
+            if args.dryRun or connector.updatePassword():
+                self.logger.debug('Renew success ! Updating resource on Passbolt ...')
+                resource.markAsUpdated()
+
+                # Get a map of users having access to the resource + their pubkey
+                resourceUsersMap = {}
+
+                # List the groups to which this resource belongs
+                resourceUserIDs = []
+                resourceGroupIDs = []
+                for permissionSet in resource['Permission']:
+                    if permissionSet['aro'] == 'Group':
+                        resourceGroupIDs.append(permissionSet['aro_foreign_key'])
+                    elif permissionSet['aro'] == 'User':
+                        resourceUserIDs.append(permissionSet['aro_foreign_key'])
+
+                # Resolve users in the given groups
+                # TODO : Add group cache
+                for resourceGroupID in resourceGroupIDs:
+                    group = self.passboltServer.api.groups.get(resourceGroupID)
+                    self.keyringManager.maybeImportGroupUsers(group['GroupUser'])
+                    for groupUser in group['GroupUser']:
+                        resourceUsersMap[groupUser['User']['id']] = groupUser['User']['Gpgkey']['key_id']
+
+                # TODO : Add user cache
+                for resourceUserID in resourceUserIDs:
+                    # The user might also be in a group, in that case, it's useless to add it twice
+                    if resourceUserID not in resourceUsersMap:
+                        user = self.passboltServer.api.users.get(resourceUserID)
+                        self.keyringManager.maybeImportUser(user)
+                        resourceUsersMap[resourceUserID] = user['Gpgkey']['key_id']
+
+                # We now have a map of user IDs with their key ID, that way we can proceed to
+                # the encryption of the new password.
+                secretsPayload = []
+                for userID in resourceUsersMap.keys():
+                    # Encrypt the password, create the secrets payload
+                    userKeyID = resourceUsersMap[userID]
+                    self.logger.debug('Encrypting password for user [{}] ({})'.format(userID, userKeyID))
+                    secretsPayload.append({
+                        'user_id': userID,
+                        'data': self.keyringManager.keyring.encrypt(newPassword, userKeyID).data.decode('utf-8')
+                    })
+
+                if not args.dryRun:
+                    if self.passboltServer.updateResource(resourceID,
+                                                          resource.generateDescription(), secretsPayload):
+                        self.logger.info('Resource "{}" renewed and updated'.format(resourceName))
+                        renewalStats['items']['success'].append({'resource': resource})
+                    else:
+                        self.logger.error('Failed to renew resource "{}" [{}], rolling back ...'
+                                          .format(resourceName, resourceID))
+                        if connector.rollbackPasswordUpdate():
+                            self.logger.info('Password successfully rolled back')
+                            renewalStats['items']['rollback'].append({'resource': resource})
+                        else:
+                            self.logger.error('''*** Heads up ! *** Password has been updated on the service,
+but could not be saved on Passbolt. Password rollback also failed.''')
+                            self.logger.error(secretsPayload)
+                            renewalStats['items']['errors'].append({'resource': resource,
+                                                                    'payload': secretsPayload})
+                else:
+                    self.logger.info('Skipping the update of "{}" on Passbolt as dry-run is activated'
+                                     .format(resourceName))
+                    renewalStats['items']['success'].append({'resource': resource})
+            else:
+                self.logger.error('Failed to renew resource "{}" [{}]'.format(resourceName, resourceID))
+                renewalStats['items']['failures'].append({'resource': resource})
+        elif resource.connectorType is not None:
+            self.logger.info('Skipping resource "{}" [{}] as no connector is available.'
+                             .format(resourceName, resourceID))
+        else:
+            self.logger.info('Skipping resource "{}" [{}] as no connector is defined.'
+                             .format(resourceName, resourceID))
 
     """
     Takes care of fetching every resource corresponding to the given criterias. Each resource will then be
@@ -179,4 +192,7 @@ but could not be saved on Passbolt. Password rollback also failed.''')
     def __createConnector(self, resource, newPassword):
         # Decrypt the old password
         oldPassword = str(self.keyringManager.keyring.decrypt(resource['Secret'][0]['data']))
-        return XWikiConnector(resource, oldPassword, newPassword)
+        if resource.connectorType == 'XWiki':
+            return XWikiConnector(self.configManager, resource, oldPassword, newPassword)
+        else:
+            return None
