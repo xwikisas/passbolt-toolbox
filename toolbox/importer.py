@@ -53,7 +53,7 @@ class ImportHelper:
                         resources.append(resource)
                     else:
                         self.logger.info('Skipping resource [{}] as it is already on the server'
-                                         .format(resource['name'])))
+                                         .format(resource['name']))
             else:
                 resources = csvResources
 
