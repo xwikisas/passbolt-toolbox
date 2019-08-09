@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+import urllib3
 
 from gnupg import GPG
 
@@ -26,6 +27,8 @@ configManager = ConfigManager()
 keyring = GPG(gnupghome=Environment.keyringDir)
 keyringManager = KeyringManager(keyring)
 passboltServer = PassboltServer(configManager, keyring)
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 if args.action == 'setup':
     setupHelper = SetupHelper(configManager, keyring)
