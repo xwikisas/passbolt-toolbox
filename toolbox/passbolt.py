@@ -132,7 +132,8 @@ class PassboltServer:
                    and (permissionSet['type'] == 7 or permissionSet['type'] == 15)):
                     hasUserWriteAccess = True
 
-            if hasUserWriteAccess:
+            # Check for write access and if the resource has a connector defined
+            if hasUserWriteAccess and resource.connectorType is not None:
                 filteredResources.append(resource)
 
         return filteredResources

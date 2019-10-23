@@ -17,6 +17,7 @@ class Resource:
     dateFormat = "%d/%m/%Y"
 
     def __init__(self, resourceJSON):
+        # The pure JSON returned by the API
         self.resourceJSON = resourceJSON
         self.lastUpdateDate = None
         self.updateCount = 0

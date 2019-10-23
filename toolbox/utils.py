@@ -54,25 +54,29 @@ def parse_args():
     # Renew utils
     renewParser = subParsers.add_parser(
         'renew',
-        help='renew a set of passwords'
+        help='renew a set of resources'
     )
     renewScope = renewParser.add_mutually_exclusive_group()
     renewScope.add_argument('-p', '--personal',
                             action='store_true',
-                            help='only renew personal passwords that are not shared with anybody')
+                            help='only renew personal resources that are not shared with anybody')
+    renewScope.add_argument('-r', '--resources',
+                            type=valid_id_list,
+                            default=[],
+                            help='a comma-separated list of resources to renew')
     renewScope.add_argument('-g', '--group',
                             nargs=1,
-                            help='group in which the password should be included')
+                            help='group in which the resources should be included')
     renewParser.add_argument('-b', '--before',
                              type=valid_date,
-                             help='date before which the password should have been updated')
+                             help='date before which the resources should have been updated')
     renewParser.add_argument('-a', '--after',
                              type=valid_date,
-                             help='date after which the password should have been updated')
+                             help='date after which the resources should have been updated')
     renewParser.add_argument('-l', '--limit',
                              type=int,
                              default=0,
-                             help='only update the n first passwords')
+                             help='only update the n first resources found')
     renewParser.add_argument('-mr', '--mail-report',
                              dest='mailReportRecipient',
                              metavar='RECIPIENT',

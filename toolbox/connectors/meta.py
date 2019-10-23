@@ -7,7 +7,7 @@ of a specific service using the information they get at initialization.
 class Connector:
     """
     @param configManager : the configuration manager
-    @param resource : information about the resource to update (server url, description, username, ...)
+    @param resource : the resource object itself
     @param oldPassword : the old resource password
     @param newPasword : the new resource password
     """

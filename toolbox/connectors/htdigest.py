@@ -14,14 +14,19 @@ class HtdigestConnector(Connector):
         'domain': None
     }
 
-    def __init__(self, resource, oldPassword, newPassword):
-        super(HtdigestConnector, self).__init__(resource, oldPassword, newPasword)
+    def __init__(self, configManager, resource, oldPassword, newPassword):
+        super(HtdigestConnector, self).__init__(configManager, resource, oldPassword, newPassword)
 
         # Get the htdigest connector configuration
-        if 'htdigest' in self.configManager.connectors().keySet():
-            self.config = self.configManager.connectors()['htdigest']
+        self.config = self.defaultConfig
+        if 'htdigest' in self.configManager.connectors().keys():
+            self.config.update(self.configManager.connectors()['htdigest'])
+
+        # Compute the domain to use, default on the URI of the server
+        if self.config['domain']:
+            domain = self.config['domain']
         else:
-            self.config = self.defaultConfig
+            domain = resource['Resource']['uri']
 
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.WarningPolicy())
@@ -29,12 +34,6 @@ class HtdigestConnector(Connector):
     def updatePassword(self):
         # Connect to the server
         self.client.connect(resource['Resource']['uri'], username=self.config['username'])
-
-        # Compute the domain to use, default on the URI of the server
-        if self.config['domain']:
-            domain = self.config['domain']
-        else:
-            domain = resource['Resource']['uri']
 
         if self.config['use-sudo']:
             command = 'sudo {}/./update_htdigest.sh "{}" "{}" "{}"'
@@ -46,5 +45,17 @@ class HtdigestConnector(Connector):
                            resource['Resource']['username'],
                            self.newPassword))
 
+        self.client.close()
+
     def rollbackPasswordUpdate(self):
-        pass
+        self.client.connect(resource['Resource']['uri'], username=self.config['username'])
+
+        if self.config['use-sudo']:
+            command = 'sudo {}/./rollback_htdigest.sh'
+        else:
+            command = '{}/./rollback_htdigest.sh'
+
+        stdin, stdout, stderr = client.exec_command(
+            command.format(self.config['script-directory']))
+
+        self.client.close()

@@ -1,3 +1,4 @@
+import importlib
 import logging
 
 from connectors.xwiki import XWikiConnector
@@ -192,7 +193,18 @@ but could not be saved on Passbolt. Password rollback also failed.''')
     def __createConnector(self, resource, newPassword):
         # Decrypt the old password
         oldPassword = str(self.keyringManager.keyring.decrypt(resource['Secret'][0]['data']))
-        if resource.connectorType == 'XWiki':
-            return XWikiConnector(self.configManager, resource, oldPassword, newPassword)
+
+        if resource.connectorType is None:
+            return None
         else:
+            # Go through the connectors that we have registered in the configuration.
+            # If we find one that fits our connectorType, instantiate it.
+            for connectorName in self.configManager.connectors():
+                connector = self.configManager.connectors()[connectorName]
+                if connector['alias'] == resource.connectorType:
+                    connectorModule = importlib.import_module('connectors.{}'.format(connectorName))
+                    connectorClass = getattr(connectorModule, connector['class'])
+                    return connectorClass(self.configManager, resource, oldPassword, newPassword)
+
+            self.logger.warning('Could not find any connector with alias "{}".'.format(resource.connectorType))
             return None
