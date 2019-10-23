@@ -6,7 +6,7 @@ import stat
 
 
 class Environment:
-    configDir = '{}/.passbolt-toolbox'.format(os.getenv('HOME'))
+    configDir = '{}/.config/passbolt-toolbox'.format(os.getenv('HOME'))
     configFilePath = '{}/config.json'.format(configDir)
     keyringDir = '{}/gnupg'.format(configDir)
     privateKeysDir = '{}/private-keys-v1.d'.format(keyringDir)

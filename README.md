@@ -14,7 +14,7 @@ In order to properly communicate with Passbolt, the tool needs to know the follo
 * The private key of the user that you will use for authentication on the server (this key should also be *ultimately* trusted)
 * The address of the server
 
-Those information are stored in `~/.passbolt-toolbox/config.json`. You can refer to this file in case something goes wrong. Here is an example a file :
+Those information are stored in `~/.config/passbolt-toolbox/config.json`. You can refer to this file in case something goes wrong. Here is an example a file :
 
 ```
 {
@@ -85,12 +85,12 @@ This part is not automated yet :/ however, it's supposed to be more simple than 
 
 First, import your key in the application keyring :
 ```
-gpg --homedir ~/.passbolt-toolbox/gnupg --import <your_file>
+gpg --homedir ~/.config/passbolt-toolbox/gnupg --import <your_file>
 ```
 
-You can now see your imported key with `gpg --homedir ~/.passbolt-toolbox/gnupg --list-secret-keys`, here is an example :
+You can now see your imported key with `gpg --homedir ~/.config/passbolt-toolbox/gnupg --list-secret-keys`, here is an example :
 ```
-~/.passbolt-toolbox/gnupg/pubring.gpg
+~/.config/passbolt-toolbox/gnupg/pubring.gpg
 ------------------------------------------------
 sec   rsa2048 2019-05-28 [SC]
       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -98,7 +98,7 @@ uid           [ unknown] Your Name <your email at xwiki.com>
 ssb   rsa2048 2019-05-28 [E]
 ```
 
-Then, you will need to copy-paste your key fingerprint in the `user.fingerprint` field of `~/.passbolt-toolbox/config.json`.
+Then, you will need to copy-paste your key fingerprint in the `user.fingerprint` field of `~/.config/passbolt-toolbox/config.json`.
 
 ### Testing the configuration
 
