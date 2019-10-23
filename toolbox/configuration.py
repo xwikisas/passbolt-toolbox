@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import os.path
+import shutil
 import stat
 
 
@@ -65,13 +66,7 @@ class ConfigManager:
                 'No configuration file found, creating a new one in [{}].'
                 .format(Environment.configFilePath)
             )
-            with open(Environment.configFilePath, 'w+') as emptyFile:
-                # The default minimal configuration
-                emptyFile.write('''{
-                "server": {"fingerprint": "", "uri": "", "verifyCert": true},
-                "user": {"fingerprint": ""},
-                "parameters": {"mail": {"server": "", "user": "", "password": "", "sender": ""}},
-                "connectors": {}}''')
+            shutil.copy2('toolbox/templates/config.json', Environment.configFilePath)
 
         with open(Environment.configFilePath, 'r+') as configFile:
             self.config = json.load(configFile)

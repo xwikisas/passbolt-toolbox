@@ -1,0 +1,31 @@
+{
+    "server": {
+        "fingerprint": "",
+        "uri": "",
+        "verifyCert": true
+    },
+    "user": {
+        "fingerprint": ""
+    },
+    "parameters": {
+        "mail": {
+            "server": "",
+            "user": "",
+            "password": "",
+            "sender": ""
+        }
+    },
+    "connectors": {
+        "htdigest": {
+            "alias": "Apache",
+            "class": "HtdigestConnector",
+            "user": "wheel",
+            "script-directory": "",
+            "use-sudo": true
+        },
+        "xwiki": {
+            "alias": "XWiki",
+            "class": "XWikiConnector"
+        }
+    }
+}
