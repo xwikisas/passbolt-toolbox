@@ -86,6 +86,17 @@ def parse_args():
                              action='store_true',
                              help='run through the renewal process without actually updating resources')
 
+    rightsParser = subParsers.add_parser(
+        'rights',
+        help='update the rights of a user on all the groups of the platform'
+    )
+
+    rightsParser.add_argument('user_id', help='the ID of the user to update')
+
+    rightsParser.add_argument('is_manager', type=bool,
+        help='should the given user be a manager of the groups it\'s in ?'
+    )
+
     importParser = subParsers.add_parser(
         'import',
         help='import a CSV file on the Passbolt Server'

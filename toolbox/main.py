@@ -12,6 +12,7 @@ from passbolt import PassboltServer
 from importer import ImportHelper
 from setup import SetupHelper
 from renew import RenewHelper
+from rights import RightsUpdateHelper
 
 from utils import init_logger
 from utils import parse_args
@@ -41,3 +42,5 @@ elif args.action == 'renew':
     RenewHelper(configManager, keyringManager, passboltServer).run(args)
 elif args.action == 'import':
     ImportHelper(configManager, keyringManager, passboltServer).run(args)
+elif args.action == 'rights':
+    RightsUpdateHelper(configManager, keyringManager, passboltServer).run(args)
