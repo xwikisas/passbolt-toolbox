@@ -56,7 +56,7 @@ def parse_args():
         'renew',
         help='renew a set of resources'
     )
-    renewScope = renewParser.add_mutually_exclusive_group()
+    renewScope = renewParser.add_mutually_exclusive_group(required=True)
     renewScope.add_argument('-p', '--personal',
                             action='store_true',
                             help='only renew personal resources that are not shared with anybody')
