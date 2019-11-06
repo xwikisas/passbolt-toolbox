@@ -157,7 +157,7 @@ class ImportHelper:
         }
 
         try:
-            result = self.passboltServer.api.resources.post(data=json.dumps(payload))
+            result = self.passboltServer.api.resources.post(data=payload)
             self.logger.info(result)
             return result['id']
         except PassboltAPIError as e:
@@ -179,8 +179,8 @@ class ImportHelper:
         }
 
         try:
-            self.logger.debug(json.dumps(payload))
-            result = self.passboltServer.api.share.put(resourceID, data=json.dumps(payload))
+            self.logger.debug(payload)
+            result = self.passboltServer.api.share.put(resourceID, data=payload)
             return True
         except PassboltAPIError as e:
             self.logger.debug(e)
@@ -223,8 +223,8 @@ class ImportHelper:
         }
 
         try:
-            self.logger.debug(json.dumps(payload))
-            response = self.passboltServer.api.groups.post(data=json.dumps(payload))
+            self.logger.debug(payload)
+            response = self.passboltServer.api.groups.post(data=payload)
 
             # Update the local group list to add the newly created group
             self.groups.append({'Group': response['Group']})

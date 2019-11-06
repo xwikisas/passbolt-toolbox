@@ -7,6 +7,7 @@ from requests.exceptions import RequestException
 from urllib.parse import urlparse
 
 from .meta import Connector
+from .meta import PasswordUpdateError
 
 
 class XWikiHTMLParser(HTMLParser):
@@ -41,13 +42,14 @@ class XWikiConnector(Connector):
                 headers=self.headers)
             self.logger.debug('Server response : [{}]'.format(result.content))
 
-            return result.status_code == 202
+            if result.status_code != 202:
+                raise PasswordUpdateError('Server returned an invalid status code : [{}]'.format(result.status_code))
         except RequestException as e:
-            self.logger.error('Communication with the XWiki server failed : [{}]'.format(e))
-            return False
+            raise PasswordUpdateError('Communication with the XWiki server failed : [{}]'.format(e))
 
     def updatePassword(self):
         self.resourceUsername = self.resource['Resource']['username']
+        self.logger.debug('Resource username : [{}]'.format(self.resourceUsername))
 
         try:
             # First step, try to reach the instance using the link provided
@@ -60,8 +62,7 @@ class XWikiConnector(Connector):
             # ... which covers most of the use cases
             restRawPath = self.parser.feed(result.content.decode('utf-8'))
             if restRawPath == '' or restRawPath is None:
-                self.logger.error('Failed to get the REST API path for the XWiki server.')
-                return False
+                raise PasswordUpdateError('Failed to get the REST API path for the XWiki server')
 
             restRootPath = restRawPath.split('rest')[0] + 'rest'
             parsedURL = urlparse(self.resource['Resource']['uri'])
@@ -73,8 +74,7 @@ class XWikiConnector(Connector):
 
             return self.__sendPasswordUpdateRequest(self.oldPassword, self.newPassword)
         except RequestException as e:
-            self.logger.error('Communication with the XWiki server failed : [{}]'.format(e))
-            return False
+            raise PasswordUpdateError('Communication with the XWiki server failed : [{}]'.format(e))
 
     def rollbackPasswordUpdate(self):
         return self.__sendPasswordUpdateRequest(self.newPassword, self.oldPassword)

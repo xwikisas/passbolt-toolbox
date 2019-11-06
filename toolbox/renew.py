@@ -1,6 +1,7 @@
 import importlib
 import logging
 
+from connectors.meta import PasswordUpdateError
 from connectors.xwiki import XWikiConnector
 from reports import ReportManager
 from resource import Resource
@@ -65,14 +66,17 @@ class RenewHelper:
     def __renewResource(self, resource, args, renewalStats):
         resourceID = resource['Resource']['id']
         resourceName = resource['Resource']['name']
-        self.logger.info('Renewing resource "{}"'.format(resourceName, resourceID))
+        self.logger.debug('Renewing resource "{}"'.format(resourceName, resourceID))
 
         # Generate the new password
         newPassword = token_urlsafe(32)
 
         connector = self.__createConnector(resource, newPassword)
         if connector:
-            if args.dryRun or connector.updatePassword():
+            try:
+                if not args.dryRun:
+                    connector.updatePassword()
+
                 self.logger.debug('Renew success ! Updating resource on Passbolt ...')
                 resource.markAsUpdated()
 
@@ -119,7 +123,7 @@ class RenewHelper:
                 if not args.dryRun:
                     if self.passboltServer.updateResource(resourceID,
                                                           resource.generateDescription(), secretsPayload):
-                        self.logger.info('Resource "{}" renewed and updated'.format(resourceName))
+                        self.logger.info('Resource [{}] successfully renewed and updated'.format(resourceName))
                         renewalStats['items']['success'].append({'resource': resource})
                     else:
                         self.logger.error('Failed to renew resource "{}" [{}], rolling back ...'
@@ -134,18 +138,16 @@ but could not be saved on Passbolt. Password rollback also failed.''')
                             renewalStats['items']['errors'].append({'resource': resource,
                                                                     'payload': secretsPayload})
                 else:
-                    self.logger.info('Skipping the update of "{}" on Passbolt as dry-run is activated'
+                    self.logger.info('Skipping the update of [{}] on Passbolt as dry-run is activated'
                                      .format(resourceName))
                     renewalStats['items']['success'].append({'resource': resource})
-            else:
-                self.logger.error('Failed to renew resource "{}" [{}]'.format(resourceName, resourceID))
+            except PasswordUpdateError as e:
+                self.logger.error('Failed to renew resource [{}] : [{}]'.format(resourceName, e))
                 renewalStats['items']['failures'].append({'resource': resource})
         elif resource.connectorType is not None:
-            self.logger.info('Skipping resource "{}" [{}] as no connector is available.'
-                             .format(resourceName, resourceID))
+            self.logger.info('Skipping resource [{}] as no connector is available.'.format(resourceName))
         else:
-            self.logger.info('Skipping resource "{}" [{}] as no connector is defined.'
-                             .format(resourceName, resourceID))
+            self.logger.info('Skipping resource [{}] as no connector is defined.'.format(resourceName))
 
     """
     Takes care of fetching every resource corresponding to the given criterias. Each resource will then be
@@ -206,5 +208,5 @@ but could not be saved on Passbolt. Password rollback also failed.''')
                     connectorClass = getattr(connectorModule, connector['class'])
                     return connectorClass(self.configManager, resource, oldPassword, newPassword)
 
-            self.logger.warning('Could not find any connector with alias "{}".'.format(resource.connectorType))
+            self.logger.warning('Could not find any connector with alias [{}].'.format(resource.connectorType))
             return None

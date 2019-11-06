@@ -1,14 +1,17 @@
-import json
 import logging
 
 from passboltapi.meta import PassboltAPI
 from passboltapi.meta import PassboltAPIError
 
 
-# Defines a Passbolt instance with its fingerprint, its url, ...
 class PassboltServer:
+    """Defines a Passbolt instance with its fingerprint, its url, ..."""
+
     logger = logging.getLogger('PassboltServer')
 
+    """
+    Builds and inits the passboltServer
+    """
     def __init__(self, configManager, keyring):
         self.configManager = configManager
         self.keyring = keyring
@@ -143,9 +146,9 @@ class PassboltServer:
         self.logger.debug('Will update resource with payload : [{}]'.format(payload))
 
         try:
-            self.api.resources.put(resourceID, data=json.dumps(payload))
+            self.api.resources.put(resourceID, data=payload)
 
-            self.logger.info('Successfully updated resource [{}]'.format(resourceID))
+            self.logger.debug('Successfully updated resource [{}]'.format(resourceID))
             return True
         except PassboltAPIError as e:
             self.logger.error('Failed to update the password [{}] on Passbolt !'.format(resourceID))
@@ -157,7 +160,7 @@ class PassboltServer:
         self.logger.debug('Will update resource with payload : [{}]'.format(payload))
 
         try:
-            self.api.resources.put(resourceID, data=json.dumps(payload))
+            self.api.resources.put(resourceID, data=payload)
 
             self.logger.info('Successfully updated resource [{}]'.format(resourceID))
             return True
