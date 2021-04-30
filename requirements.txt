@@ -15,4 +15,4 @@ python-gnupg==0.4.4
 requests==2.22.0
 requests-gpgauthlib==0.1.2
 six==1.12.0
-urllib3==1.25.3
+urllib3==1.25.8
